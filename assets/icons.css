@@ -1,0 +1,138 @@
+/* 基础图标样式 */
+.icon {
+    font-family: Arial, sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 常用图标 */
+.icon-home::before { content: '\2302'; }
+.icon-user::before { content: '\1F464'; }
+.icon-search::before { content: '\1F50D'; }
+.icon-menu::before { content: '\2630'; }
+.icon-close::before { content: '\2715'; }
+.icon-check::before { content: '\2714'; }
+.icon-error::before { content: '\2716'; }
+.icon-info::before { content: '\2139'; }
+.icon-warning::before { content: '\26A0'; }
+.icon-bell::before { content: '\1F514'; }
+.icon-calendar::before { content: '\1F4C5'; }
+.icon-clock::before { content: '\1F550'; }
+.icon-folder::before { content: '\1F4C1'; }
+.icon-file::before { content: '\1F4C4'; }
+.icon-image::before { content: '\1F4F7'; }
+.icon-video::before { content: '\1F4F9'; }
+.icon-music::before { content: '\266B'; }
+.icon-heart::before { content: '\2665'; }
+.icon-star::before { content: '\2605'; }
+.icon-bookmark::before { content: '\1F516'; }
+.icon-settings::before { content: '\2699'; }
+.icon-trash::before { content: '\1F5D1'; }
+.icon-edit::before { content: '\270E'; }
+.icon-share::before { content: '\1F4E4'; }
+.icon-download::before { content: '\2B73'; }
+.icon-upload::before { content: '\2B71'; }
+.icon-refresh::before { content: '\27F3'; }
+.icon-lock::before { content: '\1F512'; }
+.icon-unlock::before { content: '\1F513'; }
+.icon-key::before { content: '\1F511'; }
+.icon-mail::before { content: '\2709'; }
+.icon-phone::before { content: '\1F4DE'; }
+.icon-location::before { content: '\1F4CD'; }
+.icon-cart::before { content: '\1F6D2'; }
+.icon-print::before { content: '\1F5B6'; }
+.icon-camera::before { content: '\1F4F7'; }
+.icon-mic::before { content: '\1F3A4'; }
+.icon-volume::before { content: '\1F50A'; }
+.icon-mute::before { content: '\1F507'; }
+.icon-play::before { content: '\25B6'; }
+.icon-pause::before { content: '\23F8'; }
+.icon-stop::before { content: '\23F9'; }
+.icon-next::before { content: '\23ED'; }
+.icon-prev::before { content: '\23EE'; }
+.icon-up::before { content: '\2B06'; }
+.icon-down::before { content: '\2B07'; }
+.icon-left::before { content: '\2B05'; }
+.icon-right::before { content: '\27A1'; }
+.icon-plus::before { content: '\2795'; }
+.icon-minus::before { content: '\2796'; }
+.icon-circle::before { content: '\25CF'; }
+.icon-square::before { content: '\25A0'; }
+.icon-triangle::before { content: '\25B2'; }
+.icon-comment::before { content: '\1F4AC'; }
+.icon-chat::before { content: '\1F4AD'; }
+.icon-link::before { content: '\1F517'; }
+.icon-tag::before { content: '\1F3F7'; }
+.icon-cloud::before { content: '\2601'; }
+.icon-sun::before { content: '\2600'; }
+.icon-moon::before { content: '\1F319'; }
+.icon-rain::before { content: '\1F327'; }
+.icon-snow::before { content: '\2744'; }
+.icon-wind::before { content: '\1F4A8'; }
+.icon-eye::before { content: '\1F441'; }
+.icon-eye-off::before { content: '\1F576'; }
+.icon-flag::before { content: '\2691'; }
+.icon-bookmark::before { content: '\1F516'; }
+.icon-pin::before { content: '\1F4CC'; }
+.icon-paperclip::before { content: '\1F4CE'; }
+.icon-trophy::before { content: '\1F3C6'; }
+.icon-gift::before { content: '\1F381'; }
+.icon-crown::before { content: '\1F451'; }
+.icon-diamond::before { content: '\1F48E'; }
+.icon-light::before { content: '\1F4A1'; }
+.icon-palette::before { content: '\1F3A8'; }
+.icon-magic::before { content: '\2728'; }
+.icon-fire::before { content: '\1F525'; }
+.icon-heart-fill::before { content: '\2764'; }
+.icon-star-fill::before { content: '\2605'; }
+.icon-circle-fill::before { content: '\25CF'; }
+.icon-square-fill::before { content: '\25A0'; }
+.icon-triangle-fill::before { content: '\25B2'; }
+
+/* 文件类型图标 */
+.icon-pdf::before { content: "📄"; }
+.icon-doc::before { content: "📝"; }
+.icon-xls::before { content: "📊"; }
+.icon-ppt::before { content: "📑"; }
+.icon-zip::before { content: "🗜️"; }
+.icon-audio::before { content: "🎵"; }
+.icon-video-file::before { content: "🎬"; }
+
+/* 天气图标 */
+.icon-rain::before { content: "🌧️"; }
+.icon-snow::before { content: "❄️"; }
+.icon-wind::before { content: "💨"; }
+.icon-thunder::before { content: "⚡"; }
+
+/* 设备图标 */
+.icon-desktop::before { content: "🖥️"; }
+.icon-laptop::before { content: "💻"; }
+.icon-tablet::before { content: "📱"; }
+.icon-mobile::before { content: "📱"; }
+.icon-tv::before { content: "📺"; }
+.icon-printer::before { content: "🖨️"; }
+.icon-keyboard::before { content: "⌨️"; }
+.icon-mouse::before { content: "🖱️"; }
+
+/* 其他常用图标 */
+.icon-gift::before { content: "🎁"; }
+.icon-trophy::before { content: "🏆"; }
+.icon-fire::before { content: "🔥"; }
+.icon-money::before { content: "💰"; }
+.icon-credit-card::before { content: "💳"; }
+.icon-chart::before { content: "📊"; }
+.icon-tools::before { content: "🛠️"; }
+.icon-paint::before { content: "🎨"; }
+.icon-globe::before { content: "🌍"; }
+.icon-pin::before { content: "📍"; }
+.icon-target::before { content: "🎯"; }
+.icon-flag::before { content: "🚩"; }
+.icon-box::before { content: "📦"; }
+.icon-time::before { content: "⏰"; }
+.icon-sync::before { content: "🔄"; }
+.icon-infinity::before { content: "♾️"; } 

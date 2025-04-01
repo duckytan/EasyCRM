@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内设数据修改 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="settings.html" class="text-blue-500">
+                    <i class="fas fa-chevron-left mr-1"></i>设置
+                </a>
+            </div>
+            <div>内设数据管理</div>
+            <div class="title-bar-right"></div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <div class="mb-4">
+                <p class="text-gray-500 text-sm mb-4">在此页面，您可以管理系统中使用的预设数据项，包括下拉菜单选项等。</p>
+            </div>
+            
+            <!-- 预设数据列表 -->
+            <div class="ios-card">
+                <div class="card-header">
+                    <i class="fas fa-list text-blue-500 mr-2"></i>
+                    可编辑数据类别
+                </div>
+                <div class="card-body p-0">
+                    <div class="ios-list-item" data-type="customer-categories">
+                        <div class="list-item-content">
+                            <div class="list-item-title">客户分类</div>
+                            <div class="list-item-subtitle">普通客户、VIP客户等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="customer-intentions">
+                        <div class="list-item-content">
+                            <div class="list-item-title">客户意向等级</div>
+                            <div class="list-item-subtitle">H级、A级、B级等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="regions">
+                        <div class="list-item-content">
+                            <div class="list-item-title">所在地区</div>
+                            <div class="list-item-subtitle">北京、上海等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="budget-ranges">
+                        <div class="list-item-content">
+                            <div class="list-item-title">预算范围</div>
+                            <div class="list-item-subtitle">5万以下、5-20万等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="superior-contacts">
+                        <div class="list-item-content">
+                            <div class="list-item-title">上级联系人</div>
+                            <div class="list-item-subtitle">客户的上级关系类型</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="subordinate-contacts">
+                        <div class="list-item-content">
+                            <div class="list-item-title">下级联系人</div>
+                            <div class="list-item-subtitle">客户的下级关系类型</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="preset-products">
+                        <div class="list-item-content">
+                            <div class="list-item-title">预设产品</div>
+                            <div class="list-item-subtitle">保湿面霜、清爽洁面乳等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" data-type="visit-types">
+                        <div class="list-item-content">
+                            <div class="list-item-title">回访类型</div>
+                            <div class="list-item-subtitle">计划回访、产品回访等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <a href="preset-data-editor.html?type=navigation-modes" class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">导航模式</div>
+                            <div class="list-item-subtitle">百度地图、高德地图等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </a>
+                    
+                    <!-- 提醒周期选项 -->
+                    <a href="preset-data-editor.html?type=reminder-cycles" class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">提醒周期</div>
+                            <div class="list-item-subtitle">今天、3天内、7天内、15天内等</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 为数据类别列表项添加点击事件
+        const dataItems = document.querySelectorAll('.ios-list-item[data-type]');
+        dataItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const dataType = this.getAttribute('data-type');
+                window.location.href = `preset-data-editor.html?type=${dataType}`;
+            });
+        });
+    });
+    </script>
+</body>
+</html> 

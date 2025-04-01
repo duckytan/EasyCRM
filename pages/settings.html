@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left"></div>
+            <div>设置</div>
+            <div class="title-bar-right"></div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <!-- 账户设置 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-user-circle text-blue-500 mr-2"></i>
+                    账户设置
+                </div>
+                <div class="card-body p-0">
+                    <div class="ios-list-item" id="changePasswordBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">修改密码</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item text-red-500" id="logoutBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">退出登录</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-sign-out-alt text-red-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统设置 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-cog text-blue-500 mr-2"></i>
+                    系统设置
+                </div>
+                <div class="card-body p-0">
+                    <div class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">深色模式</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <label class="ios-switch">
+                                <input type="checkbox" id="darkModeToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">语言</div>
+                            <div class="list-item-subtitle">简体中文</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" id="presetDataBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">内设数据修改</div>
+                            <div class="list-item-subtitle">修改系统预设选项</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 通知设置 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-bell text-blue-500 mr-2"></i>
+                    通知设置
+                </div>
+                <div class="card-body p-0">
+                    <div class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">回访提醒</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <label class="ios-switch">
+                                <input type="checkbox" id="visitReminderToggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">客户生日提醒</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <label class="ios-switch">
+                                <input type="checkbox" id="birthdayReminderToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据管理 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-database text-blue-500 mr-2"></i>
+                    数据管理
+                </div>
+                <div class="card-body p-0">
+                    <div class="ios-list-item" id="backupDataBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">备份数据</div>
+                            <div class="list-item-subtitle">上次备份: 从未</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" id="restoreDataBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">恢复数据</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" id="generateTestDataBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">生成测试数据</div>
+                            <div class="list-item-subtitle">创建100个测试客户及相关记录</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="ios-list-item text-red-500" id="clearDataBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">清空数据</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 关于 -->
+            <div class="ios-card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    关于
+                </div>
+                <div class="card-body p-0">
+                    <div class="ios-list-item">
+                        <div class="list-item-content">
+                            <div class="list-item-title">版本</div>
+                            <div class="list-item-subtitle">1.0.0</div>
+                        </div>
+                    </div>
+                    <div class="ios-list-item" id="checkUpdateBtn">
+                        <div class="list-item-content">
+                            <div class="list-item-title">检查更新</div>
+                        </div>
+                        <div class="list-item-actions">
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <!-- 修改密码模态框 -->
+    <div id="changePasswordModal" class="ios-modal">
+        <div class="ios-modal-overlay"></div>
+        <div class="ios-modal-container">
+            <div class="ios-modal-header">
+                <h3>修改密码</h3>
+                <button class="ios-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body">
+                <form id="changePasswordForm">
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">当前密码</label>
+                        <input type="password" id="currentPassword" class="ios-form-input" required>
+                    </div>
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">新密码</label>
+                        <input type="password" id="newPassword" class="ios-form-input" required>
+                    </div>
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">确认新密码</label>
+                        <input type="password" id="confirmPassword" class="ios-form-input" required>
+                    </div>
+                </form>
+            </div>
+            <div class="ios-modal-footer">
+                <button class="ios-button-secondary modal-close-btn">取消</button>
+                <button class="ios-button-primary" id="savePasswordBtn">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 清空数据确认模态框 -->
+    <div id="clearDataModal" class="ios-modal">
+        <div class="ios-modal-overlay"></div>
+        <div class="ios-modal-container">
+            <div class="ios-modal-header">
+                <h3>清空数据确认</h3>
+                <button class="ios-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body">
+                <div class="text-red-500 font-bold mb-4">警告：此操作将永久删除所有客户数据、购买记录和回访记录！</div>
+                <p class="mb-4">请输入"Delete"（区分大小写）以确认您要清空所有数据：</p>
+                <div class="ios-form-group">
+                    <input type="text" id="deleteConfirmInput" class="ios-form-input" placeholder="Delete">
+                </div>
+            </div>
+            <div class="ios-modal-footer">
+                <button class="ios-button-secondary modal-close-btn">取消</button>
+                <button class="ios-button-danger" id="confirmDeleteBtn">清空数据</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script src="../js/test-data-generator.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 迁移本地存储的设置到数据库
+            migrateLocalStorageSettings();
+            
+            // 加载用户设置
+            loadUserSettings();
+            
+            // 退出登录
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', function() {
+                if (confirm('确定要退出登录吗？')) {
+                    // 发送退出登录请求
+                    fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // 清除本地存储的用户数据
+                            localStorage.removeItem('authToken');
+                            localStorage.removeItem('userData');
+                            // 跳转到登录页面
+                            window.location.href = 'login.html';
+                        } else {
+                            showToast(data.error || '退出登录失败', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('退出登录错误:', error);
+                        // 即使API请求失败也跳转到登录页面
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('userData');
+                        window.location.href = 'login.html';
+                    });
+                }
+            });
+            
+            // 修改密码
+            const changePasswordBtn = document.getElementById('changePasswordBtn');
+            const changePasswordModal = document.getElementById('changePasswordModal');
+            const modalCloseButtons = document.querySelectorAll('.modal-close-btn, .ios-modal-close');
+            const savePasswordBtn = document.getElementById('savePasswordBtn');
+            
+            changePasswordBtn.addEventListener('click', function() {
+                changePasswordModal.classList.add('active');
+            });
+            
+            modalCloseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const modal = this.closest('.ios-modal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+            
+            savePasswordBtn.addEventListener('click', function() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showToast('请填写所有密码字段', 'error');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showToast('新密码与确认密码不一致', 'error');
+                    return;
+                }
+                
+                // 提交修改密码请求
+                fetch('/api/managers/password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('密码修改成功');
+                        changePasswordModal.classList.remove('active');
+                        document.getElementById('changePasswordForm').reset();
+                    } else {
+                        showToast(data.error || '密码修改失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('修改密码错误:', error);
+                    showToast('密码修改失败', 'error');
+                });
+            });
+            
+            // 清空数据模态框
+            const clearDataModal = document.getElementById('clearDataModal');
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            clearDataBtn.addEventListener('click', function() {
+                clearDataModal.classList.add('active');
+                // 重置输入框
+                document.getElementById('deleteConfirmInput').value = '';
+            });
+            
+            confirmDeleteBtn.addEventListener('click', function() {
+                const confirmText = document.getElementById('deleteConfirmInput').value;
+                
+                if (confirmText !== 'Delete') {
+                    showToast('请输入正确的确认文本："Delete"（区分大小写）', 'error');
+                    return;
+                }
+                
+                // 执行删除操作
+                showToast('正在清空数据，请稍候...', 'info', 5000);
+                
+                fetch('/api/data/delete-all', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('所有数据已成功清空', 'success');
+                        clearDataModal.classList.remove('active');
+                        setTimeout(() => {
+                            // 重新加载页面以显示更新后的状态
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showToast(data.error || '清空数据失败', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('清空数据失败:', error);
+                    showToast('清空数据失败: ' + error.message, 'error');
+                });
+            });
+            
+            // 深色模式切换
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            darkModeToggle.addEventListener('change', function() {
+                updateDarkMode(this.checked);
+            });
+            
+            // 内设数据修改
+            const presetDataBtn = document.getElementById('presetDataBtn');
+            presetDataBtn.addEventListener('click', function() {
+                window.location.href = 'preset-data.html';
+            });
+            
+            // 通知设置
+            const visitReminderToggle = document.getElementById('visitReminderToggle');
+            visitReminderToggle.addEventListener('change', function() {
+                updateNotificationSettings('visitReminder', this.checked);
+            });
+            
+            const birthdayReminderToggle = document.getElementById('birthdayReminderToggle');
+            birthdayReminderToggle.addEventListener('change', function() {
+                updateNotificationSettings('birthdayReminder', this.checked);
+            });
+            
+            // 数据管理
+            const backupDataBtn = document.getElementById('backupDataBtn');
+            backupDataBtn.addEventListener('click', function() {
+                backupData();
+            });
+            
+            const restoreDataBtn = document.getElementById('restoreDataBtn');
+            restoreDataBtn.addEventListener('click', function() {
+                showToast('暂不支持数据恢复功能', 'warning');
+            });
+            
+            const generateTestDataBtn = document.getElementById('generateTestDataBtn');
+            generateTestDataBtn.addEventListener('click', function() {
+                generateTestData();
+            });
+            
+            // 检查更新
+            const checkUpdateBtn = document.getElementById('checkUpdateBtn');
+            checkUpdateBtn.addEventListener('click', function() {
+                showToast('已是最新版本');
+            });
+        });
+        
+        // 迁移localStorage中的设置到数据库
+        function migrateLocalStorageSettings() {
+            const localSettings = localStorage.getItem('userSettings');
+            if (localSettings) {
+                try {
+                    const settings = JSON.parse(localSettings);
+                    console.log('发现本地存储的设置，正在迁移到数据库...');
+                    
+                    // 将设置保存到数据库
+                    fetch('/api/user-settings', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            darkMode: Boolean(settings.darkMode),
+                            visitReminder: settings.visitReminder !== false,
+                            birthdayReminder: Boolean(settings.birthdayReminder),
+                            language: settings.language || 'zh-CN',
+                            lastBackup: settings.lastBackup
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('设置迁移完成，清除本地存储...');
+                            localStorage.removeItem('userSettings');
+                            showToast('设置已迁移到数据库', 'info');
+                        } else {
+                            console.error('设置迁移失败:', data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('设置迁移错误:', error);
+                    });
+                } catch (e) {
+                    console.error('解析本地设置失败:', e);
+                    localStorage.removeItem('userSettings');
+                }
+            }
+        }
+        
+        // 加载用户设置
+        function loadUserSettings() {
+            // 从服务器获取设置
+            fetch('/api/user-settings')
+            .then(response => response.json())
+            .then(settings => {
+                // 设置深色模式
+                document.getElementById('darkModeToggle').checked = settings.darkMode;
+                if (settings.darkMode) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+                
+                // 设置通知开关
+                document.getElementById('visitReminderToggle').checked = settings.visitReminder !== false;
+                document.getElementById('birthdayReminderToggle').checked = settings.birthdayReminder || false;
+                
+                // 设置上次备份时间
+                if (settings.lastBackup) {
+                    const lastBackupDate = new Date(settings.lastBackup);
+                    const lastBackupText = document.querySelector('#backupDataBtn .list-item-subtitle');
+                    lastBackupText.textContent = `上次备份: ${lastBackupDate.toLocaleDateString()} ${lastBackupDate.toLocaleTimeString().substring(0, 5)}`;
+                }
+            })
+            .catch(error => {
+                console.error('加载用户设置失败:', error);
+                showToast('加载设置失败', 'error');
+            });
+        }
+        
+        // 更新深色模式设置
+        function updateDarkMode(enabled) {
+            // 更新UI
+            if (enabled) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            
+            // 发送事件，通知其他页面
+            window.dispatchEvent(new CustomEvent('themeChange', { 
+                detail: { darkMode: enabled }
+            }));
+            
+            // 保存设置到服务器
+            fetch('/api/user-settings/dark-mode', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ enabled })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    showToast('保存设置失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('保存设置失败:', error);
+                showToast('保存设置失败', 'error');
+            });
+        }
+        
+        // 更新通知设置
+        function updateNotificationSettings(type, enabled) {
+            // 保存设置到服务器
+            fetch('/api/user-settings/notification', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ type, enabled })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('设置已更新');
+                } else {
+                    showToast('保存设置失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('保存设置失败:', error);
+                showToast('保存设置失败', 'error');
+            });
+        }
+        
+        // 备份数据
+        function backupData() {
+            // 更新备份时间
+            fetch('/api/user-settings/backup', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const lastBackupDate = new Date(data.lastBackup);
+                    const lastBackupText = document.querySelector('#backupDataBtn .list-item-subtitle');
+                    lastBackupText.textContent = `上次备份: ${lastBackupDate.toLocaleDateString()} ${lastBackupDate.toLocaleTimeString().substring(0, 5)}`;
+                    
+                    showToast('数据备份成功');
+                } else {
+                    showToast('备份失败', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('备份失败:', error);
+                showToast('备份失败', 'error');
+            });
+        }
+        
+        // 生成测试数据
+        function generateTestData() {
+            if (confirm('确定要生成测试数据吗？这将创建100个测试客户及其相关的购买和回访记录。')) {
+                // 显示数据生成中的提示
+                showToast('正在生成测试数据，请耐心等待...', 'info', 3000);
+                
+                // 调用测试数据生成器
+                window.testDataGenerator.generateTestData(100)
+                    .then(result => {
+                        console.log('测试数据生成成功:', result);
+                    })
+                    .catch(error => {
+                        console.error('测试数据生成失败:', error);
+                        showToast('测试数据生成失败: ' + error.message, 'error');
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

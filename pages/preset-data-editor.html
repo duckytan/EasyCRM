@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑内设数据 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+        .item-action-buttons {
+            visibility: visible;
+        }
+        .ios-list-item:hover .item-action-buttons {
+            visibility: visible;
+        }
+        
+        .data-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .data-item-info {
+            flex: 1;
+        }
+        
+        .sortable-handle {
+            cursor: move;
+            color: #ccc;
+            margin-right: 10px;
+        }
+        
+        /* 表单输入样式 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* 修复底部导航栏遮挡和双重滚动条问题 */
+        html {
+            height: 100%;
+        }
+        
+        body {
+            height: 100%;
+            overflow-y: auto; /* 只在body上保留滚动 */
+            padding: 0;
+            margin: 0;
+        }
+        
+        .ios-page-container {
+            padding-bottom: 70px; /* 减少底部空间，避免过大 */
+            min-height: calc(100% - 70px); /* 减去底部导航高度 */
+            position: relative;
+            overflow-y: visible; /* 确保内容可以溢出到body的滚动区域 */
+        }
+        
+        .main-content {
+            padding-bottom: 20px; /* 减少内容区底部padding */
+            overflow-y: visible; /* 确保内容可以溢出到body的滚动区域 */
+        }
+        
+        /* 确保最后一个元素有适当的底部间距 */
+        .ios-card:last-child {
+            margin-bottom: 20px;
+        }
+        
+        #dataItemsList {
+            margin-bottom: 20px;
+        }
+        
+        .ios-tab-bar {
+            z-index: 1000; /* 确保导航栏在最上层 */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 50px; /* 明确设置导航栏高度 */
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="preset-data.html" class="text-blue-500">
+                    <i class="fas fa-chevron-left mr-1"></i>返回
+                </a>
+            </div>
+            <div id="pageTitle">编辑数据项</div>
+            <div class="title-bar-right">
+                <button id="addNewItemBtn" class="text-blue-500">添加</button>
+            </div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-24">
+            <div class="mb-4">
+                <p class="text-gray-500 text-sm mb-4">您可以添加、修改或删除以下数据项。拖动项目可以调整顺序。</p>
+            </div>
+            
+            <!-- 数据项列表 -->
+            <div class="ios-card mb-4">
+                <div class="card-header flex justify-between items-center">
+                    <div>
+                        <i class="fas fa-list text-blue-500 mr-2"></i>
+                        <span id="dataTypeTitle">数据项列表</span>
+                    </div>
+                    <div id="saveOrder" class="hidden">
+                        <button class="text-xs text-blue-500">保存顺序</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="dataItemsList" class="sortable-list">
+                        <!-- 数据项将通过JS动态添加 -->
+                        <div class="ios-empty-state" id="emptyState">
+                            <i class="fas fa-info-circle text-4xl mb-2"></i>
+                            <p>暂无数据项</p>
+                            <button id="emptyAddBtn" class="ios-button-small mt-3">
+                                <i class="fas fa-plus mr-1"></i> 添加第一个选项
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 导航模式说明 -->
+            <div id="navigationModeInfo" class="ios-card mb-4 hidden">
+                <div class="card-body">
+                    <p class="text-gray-600 text-sm">
+                        <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                        默认采用排在第一位的导航工具，如需使用其他导航工具，请拖动到第一位，并保存
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <!-- 添加/编辑数据项模态框 -->
+    <div id="editItemModal" class="ios-modal">
+        <div class="ios-modal-overlay"></div>
+        <div class="ios-modal-container">
+            <div class="ios-modal-header">
+                <h3 id="modalTitle">添加数据项</h3>
+                <button class="ios-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body">
+                <form id="editItemForm">
+                    <input type="hidden" id="itemId">
+                    <div class="form-grid">
+                        <!-- 客户分类的表单字段 -->
+                        <div id="categoryFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">ID</label>
+                                <input type="text" id="categoryId" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">唯一标识符，例如：normal, vip</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">名称</label>
+                                <input type="text" id="categoryName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">显示名称，例如：普通客户</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">描述</label>
+                                <textarea id="categoryDescription" class="ios-form-input" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 客户意向等级的表单字段 -->
+                        <div id="intentionFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">等级</label>
+                                <input type="text" id="intentionLevel" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：H, A, B</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">名称</label>
+                                <input type="text" id="intentionName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：H级</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">描述</label>
+                                <input type="text" id="intentionDescription" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：非常感兴趣</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">评估标准</label>
+                                <textarea id="intentionCriteria" class="ios-form-input" rows="2"></textarea>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">跟进优先级</label>
+                                <textarea id="intentionPriority" class="ios-form-input" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 地区的表单字段 -->
+                        <div id="regionFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">地区名称</label>
+                                <input type="text" id="regionName" class="ios-form-input" required>
+                            </div>
+                        </div>
+                        
+                        <!-- 预算范围的表单字段 -->
+                        <div id="budgetFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">预算范围</label>
+                                <input type="text" id="budgetRange" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：5万以下</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 上级联系人的表单字段 -->
+                        <div id="superiorFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">姓名</label>
+                                <input type="text" id="superiorName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">上级联系人姓名</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">所属公司</label>
+                                <input type="text" id="superiorCompany" class="ios-form-input">
+                                <div class="text-xs text-gray-500 mt-1">联系人所在的公司</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">是否直属</label>
+                                <select id="superiorIsDirect" class="ios-form-input">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                                <div class="text-xs text-gray-500 mt-1">是否为直属上级</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 下级联系人的表单字段 -->
+                        <div id="subordinateFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">姓名</label>
+                                <input type="text" id="subordinateName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">下级联系人姓名</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">所属公司</label>
+                                <input type="text" id="subordinateCompany" class="ios-form-input">
+                                <div class="text-xs text-gray-500 mt-1">联系人所在的公司</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">是否直属</label>
+                                <select id="subordinateIsDirect" class="ios-form-input">
+                                    <option value="1">是</option>
+                                    <option value="0">否</option>
+                                </select>
+                                <div class="text-xs text-gray-500 mt-1">是否为直属下级</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 预设产品的表单字段 -->
+                        <div id="productFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">产品名称</label>
+                                <input type="text" id="productName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">产品的名称</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">价格</label>
+                                <input type="number" id="productPrice" class="ios-form-input" step="0.01">
+                                <div class="text-xs text-gray-500 mt-1">产品的价格（元）</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">产品描述</label>
+                                <textarea id="productDescription" class="ios-form-input" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- 回访类型的表单字段 -->
+                        <div id="visitTypeFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">回访类型名称</label>
+                                <input type="text" id="visitTypeName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：计划回访</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">描述</label>
+                                <textarea id="visitTypeDescription" class="ios-form-input" rows="3"></textarea>
+                                <div class="text-xs text-gray-500 mt-1">回访类型的详细描述</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 导航模式的表单字段 -->
+                        <div id="navigationModeFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">名称</label>
+                                <input type="text" id="navigationModeName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：百度地图、高德地图</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">链接样式</label>
+                                <input type="text" id="navigationModeUrlPattern" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：https://www.baidu.com/maps?q={Address}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 提醒周期的表单字段 -->
+                        <div id="reminderCycleFields" class="hidden">
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">名称</label>
+                                <input type="text" id="reminderCycleName" class="ios-form-input" required>
+                                <div class="text-xs text-gray-500 mt-1">例如：今天、3天内、7天内</div>
+                            </div>
+                            <div class="ios-form-group">
+                                <label class="ios-form-label">天数</label>
+                                <input type="number" id="reminderCycleDays" class="ios-form-input" min="0" required>
+                                <div class="text-xs text-gray-500 mt-1">范围天数，例如：0表示今天，3表示3天内</div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="ios-modal-footer">
+                <button class="ios-button-secondary modal-close-btn">取消</button>
+                <button class="ios-button-primary" id="saveItemBtn">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认删除模态框 -->
+    <div id="deleteConfirmModal" class="ios-modal">
+        <div class="ios-modal-overlay"></div>
+        <div class="ios-modal-container">
+            <div class="ios-modal-header">
+                <h3>确认删除</h3>
+                <button class="ios-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body">
+                <p>确定要删除此数据项吗？此操作不可恢复。</p>
+                <p class="text-sm text-red-500 mt-2">注意：如果此数据项已被客户使用，删除可能会导致数据不一致。</p>
+            </div>
+            <div class="ios-modal-footer">
+                <button class="ios-button-secondary modal-close-btn">取消</button>
+                <button class="ios-button-danger" id="confirmDeleteBtn">删除</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取当前编辑的数据类型
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataType = urlParams.get('type');
+        
+        let currentItemId = null; // 当前编辑的项目ID
+        let currentItems = []; // 存储当前数据项
+        let currentDataType = dataType; // 当前数据类型
+        
+        // 根据数据类型设置页面标题
+        const pageTitleMap = {
+            'customer-categories': '客户分类管理',
+            'customer-intentions': '客户意向等级管理',
+            'regions': '地区管理',
+            'budget-ranges': '预算范围管理',
+            'superior-contacts': '上级联系人管理',
+            'subordinate-contacts': '下级联系人管理'
+        };
+        
+        document.getElementById('pageTitle').textContent = pageTitleMap[dataType] || '编辑数据项';
+        document.getElementById('dataTypeTitle').textContent = (pageTitleMap[dataType] || '数据项') + '列表';
+        
+        // 初始化模态框
+        const editItemModal = document.getElementById('editItemModal');
+        const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+        const modalCloseButtons = document.querySelectorAll('.modal-close-btn, .ios-modal-close');
+        
+        modalCloseButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                editItemModal.classList.remove('active');
+                deleteConfirmModal.classList.remove('active');
+            });
+        });
+        
+        // 添加按钮点击事件
+        document.getElementById('addNewItemBtn').addEventListener('click', function() {
+            showAddItemModal();
+        });
+        
+        document.getElementById('emptyAddBtn').addEventListener('click', function() {
+            showAddItemModal();
+        });
+        
+        // 保存按钮点击事件
+        document.getElementById('saveItemBtn').addEventListener('click', function() {
+            saveItem();
+        });
+        
+        // 删除确认按钮
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (currentItemId !== null) {
+                deleteItem(currentItemId);
+                deleteConfirmModal.classList.remove('active');
+            }
+        });
+        
+        // 初始化列表排序
+        const dataItemsList = document.getElementById('dataItemsList');
+        let sortable = new Sortable(dataItemsList, {
+            animation: 150,
+            handle: '.sortable-handle',
+            onSort: function() {
+                document.getElementById('saveOrder').classList.remove('hidden');
+            }
+        });
+        
+        // 保存排序按钮
+        document.getElementById('saveOrder').addEventListener('click', function() {
+            saveItemsOrder();
+        });
+        
+        // 加载数据项
+        loadItems(dataType);
+        
+        // 根据数据类型切换显示不同的表单字段
+        function showFormFieldsByType() {
+            // 隐藏所有字段
+            document.getElementById('categoryFields').classList.add('hidden');
+            document.getElementById('intentionFields').classList.add('hidden');
+            document.getElementById('regionFields').classList.add('hidden');
+            document.getElementById('budgetFields').classList.add('hidden');
+            document.getElementById('superiorFields').classList.add('hidden');
+            document.getElementById('subordinateFields').classList.add('hidden');
+            document.getElementById('productFields').classList.add('hidden');
+            document.getElementById('visitTypeFields').classList.add('hidden');
+            document.getElementById('navigationModeFields').classList.add('hidden');
+            document.getElementById('reminderCycleFields').classList.add('hidden');
+            
+            // 根据类型显示相应字段
+            switch(dataType) {
+                case 'customer-categories':
+                    document.getElementById('categoryFields').classList.remove('hidden');
+                    break;
+                case 'customer-intentions':
+                    document.getElementById('intentionFields').classList.remove('hidden');
+                    break;
+                case 'regions':
+                    document.getElementById('regionFields').classList.remove('hidden');
+                    break;
+                case 'budget-ranges':
+                    document.getElementById('budgetFields').classList.remove('hidden');
+                    break;
+                case 'superior-contacts':
+                    document.getElementById('superiorFields').classList.remove('hidden');
+                    break;
+                case 'subordinate-contacts':
+                    document.getElementById('subordinateFields').classList.remove('hidden');
+                    break;
+                case 'preset-products':
+                    document.getElementById('productFields').classList.remove('hidden');
+                    break;
+                case 'visit-types':
+                    document.getElementById('visitTypeFields').classList.remove('hidden');
+                    break;
+                case 'navigation-modes':
+                    document.getElementById('navigationModeFields').classList.remove('hidden');
+                    break;
+                case 'reminder-cycles':
+                    document.getElementById('reminderCycleFields').classList.remove('hidden');
+                    break;
+            }
+        }
+        
+        // 显示添加项目模态框
+        function showAddItemModal() {
+            document.getElementById('modalTitle').textContent = '添加数据项';
+            document.getElementById('editItemForm').reset();
+            document.getElementById('itemId').value = '';
+            currentItemId = null;
+            
+            showFormFieldsByType();
+            editItemModal.classList.add('active');
+        }
+        
+        // 显示编辑项目模态框
+        function showEditItemModal(item, dataType) {
+            document.getElementById('modalTitle').textContent = '编辑数据项';
+            
+            // 根据数据类型设置当前项目ID
+            if (dataType === 'customer-intentions') {
+                currentItemId = item.level;
+            } else {
+                currentItemId = item.id;
+            }
+            
+            // 显示编辑模态框
+            document.getElementById('editItemModal').classList.add('active');
+            
+            // 根据数据类型填充不同的表单字段
+            switch(dataType) {
+                case 'customer-categories':
+                    document.getElementById('categoryId').value = item.id || '';
+                    document.getElementById('categoryName').value = item.name || '';
+                    document.getElementById('categoryDescription').value = item.description || '';
+                    break;
+                case 'customer-intentions':
+                    document.getElementById('intentionLevel').value = item.level || '';
+                    document.getElementById('intentionName').value = item.name || '';
+                    document.getElementById('intentionDescription').value = item.description || '';
+                    document.getElementById('intentionCriteria').value = item.criteria || '';
+                    document.getElementById('intentionPriority').value = item.followUpPriority || '';
+                    break;
+                case 'regions':
+                    document.getElementById('regionName').value = item.name || '';
+                    break;
+                case 'budget-ranges':
+                    document.getElementById('budgetRange').value = item.name || '';
+                    break;
+                case 'superior-contacts':
+                    document.getElementById('superiorName').value = item.name || '';
+                    document.getElementById('superiorCompany').value = item.company || '';
+                    document.getElementById('superiorIsDirect').value = item.isDirect ? '1' : '0';
+                    break;
+                case 'subordinate-contacts':
+                    document.getElementById('subordinateName').value = item.name || '';
+                    document.getElementById('subordinateCompany').value = item.company || '';
+                    document.getElementById('subordinateIsDirect').value = item.isDirect ? '1' : '0';
+                    break;
+                case 'preset-products':
+                    document.getElementById('productName').value = item.productName || '';
+                    document.getElementById('productPrice').value = item.price || '';
+                    document.getElementById('productDescription').value = item.description || '';
+                    break;
+                case 'visit-types':
+                    document.getElementById('visitTypeName').value = item.name || '';
+                    document.getElementById('visitTypeDescription').value = item.description || '';
+                    break;
+                case 'navigation-modes':
+                    document.getElementById('navigationModeName').value = item.name || '';
+                    document.getElementById('navigationModeUrlPattern').value = item.urlPattern || '';
+                    break;
+                case 'reminder-cycles':
+                    document.getElementById('reminderCycleName').value = item.name || '';
+                    document.getElementById('reminderCycleDays').value = item.days || 0;
+                    break;
+            }
+            
+            // 显示对应的表单字段
+            showFormFieldsByType();
+        }
+        
+        // 加载数据项
+        async function loadItems(dataType) {
+            try {
+                const response = await fetch(`/api/${dataType}`);
+                const data = await response.json();
+                
+                // 记录当前的数据类型和数据
+                currentDataType = dataType;
+                currentItems = data;
+                
+                // 显示数据
+                displayItems(data, dataType);
+                
+                // 显示对应的添加按钮和表单
+                showAddFormForType(dataType);
+                
+                // 更新标题
+                document.getElementById('dataTypeTitle').textContent = getDataTypeTitle(dataType);
+                
+                // 显示导航模式说明信息（仅当类型为navigation-modes时）
+                const navigationModeInfo = document.getElementById('navigationModeInfo');
+                if (dataType === 'navigation-modes') {
+                    navigationModeInfo.classList.remove('hidden');
+                } else {
+                    navigationModeInfo.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading items:', error);
+                alert('加载数据失败，请刷新页面重试');
+            }
+        }
+        
+        // 保存项目
+        async function saveItem() {
+            try {
+                // 获取表单数据
+                let itemData = {};
+                let endpoint = '';
+                
+                switch(dataType) {
+                    case 'customer-categories':
+                        itemData = {
+                            id: document.getElementById('categoryId').value,
+                            name: document.getElementById('categoryName').value,
+                            description: document.getElementById('categoryDescription').value
+                        };
+                        endpoint = '/customer-categories';
+                        break;
+                    case 'customer-intentions':
+                        itemData = {
+                            level: document.getElementById('intentionLevel').value,
+                            name: document.getElementById('intentionName').value,
+                            description: document.getElementById('intentionDescription').value,
+                            criteria: document.getElementById('intentionCriteria').value,
+                            followUpPriority: document.getElementById('intentionPriority').value
+                        };
+                        endpoint = '/customer-intentions';
+                        break;
+                    case 'regions':
+                        itemData = {
+                            name: document.getElementById('regionName').value
+                        };
+                        endpoint = '/regions';
+                        break;
+                    case 'budget-ranges':
+                        itemData = {
+                            name: document.getElementById('budgetRange').value
+                        };
+                        endpoint = '/budget-ranges';
+                        break;
+                    case 'superior-contacts':
+                        itemData = {
+                            name: document.getElementById('superiorName').value,
+                            company: document.getElementById('superiorCompany').value,
+                            isDirect: document.getElementById('superiorIsDirect').value === '1'
+                        };
+                        endpoint = '/superior-contacts';
+                        break;
+                    case 'subordinate-contacts':
+                        itemData = {
+                            name: document.getElementById('subordinateName').value,
+                            company: document.getElementById('subordinateCompany').value,
+                            isDirect: document.getElementById('subordinateIsDirect').value === '1'
+                        };
+                        endpoint = '/subordinate-contacts';
+                        break;
+                    case 'preset-products':
+                        itemData = {
+                            productName: document.getElementById('productName').value,
+                            price: document.getElementById('productPrice').value || 0,
+                            description: document.getElementById('productDescription').value || ''
+                        };
+                        endpoint = '/preset-products';
+                        break;
+                    case 'visit-types':
+                        itemData = {
+                            name: document.getElementById('visitTypeName').value,
+                            description: document.getElementById('visitTypeDescription').value
+                        };
+                        endpoint = '/visit-types';
+                        break;
+                    case 'navigation-modes':
+                        itemData = {
+                            name: document.getElementById('navigationModeName').value,
+                            urlPattern: document.getElementById('navigationModeUrlPattern').value
+                        };
+                        endpoint = '/navigation-modes';
+                        break;
+                    case 'reminder-cycles':
+                        itemData = {
+                            name: document.getElementById('reminderCycleName').value,
+                            days: parseInt(document.getElementById('reminderCycleDays').value, 10)
+                        };
+                        endpoint = '/reminder-cycles';
+                        break;
+                }
+                
+                // 验证必填字段
+                if ((dataType === 'customer-categories') && (!itemData.id || !itemData.name)) {
+                    alert('ID和名称为必填项');
+                    return;
+                }
+                
+                if ((dataType === 'customer-intentions') && (!itemData.level || !itemData.name || !itemData.description)) {
+                    alert('等级、名称和描述为必填项');
+                    return;
+                }
+                
+                if ((dataType === 'regions' || dataType === 'budget-ranges') && !itemData.name) {
+                    alert('名称为必填项');
+                    return;
+                }
+                
+                if ((dataType === 'superior-contacts' || dataType === 'subordinate-contacts') && !itemData.name) {
+                    alert('姓名为必填项');
+                    return;
+                }
+                
+                // 确定itemId
+                let itemId;
+                if (dataType === 'customer-intentions') {
+                    itemId = itemData.level;
+                } else {
+                    itemId = currentItemId;
+                }
+                
+                // 添加或更新项目
+                if (currentItemId) {
+                    // 更新现有项目
+                    const response = await fetch(`/api/${dataType}/${currentItemId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(itemData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('更新失败，服务器返回错误');
+                    }
+                    
+                    const result = await response.json();
+                    
+                    // 更新本地数据
+                    const itemIndex = currentItems.findIndex(item => {
+                        if (dataType === 'customer-intentions') {
+                            return item.level === currentItemId;
+                        } else {
+                            return item.id === parseInt(currentItemId);
+                        }
+                    });
+                    
+                    if (itemIndex !== -1) {
+                        // 合并更新后的数据
+                        currentItems[itemIndex] = {...currentItems[itemIndex], ...itemData};
+                    }
+                    
+                    // 重新显示数据项列表
+                    displayItems(currentItems, dataType);
+                    
+                    alert('数据项已更新');
+                } else {
+                    // 添加新项目
+                    const response = await fetch(`/api/${dataType}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(itemData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('添加失败，服务器返回错误');
+                    }
+                    
+                    // 重新加载数据
+                    await loadItems(dataType);
+                    
+                    alert('新数据项已添加');
+                }
+                
+                // 关闭模态框
+                document.getElementById('editItemModal').classList.remove('active');
+                document.getElementById('editItemForm').reset();
+            } catch (error) {
+                console.error('保存数据失败:', error);
+                alert('保存失败: ' + error.message);
+            }
+        }
+        
+        // 删除项目
+        async function deleteItem(itemId) {
+            try {
+                const response = await fetch(`/api/${dataType}/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`服务器返回错误: ${response.status}`);
+                }
+                
+                // 从本地数据中移除被删除的项目
+                const idField = dataType === 'customer-intentions' ? 'level' : 'id';
+                currentItems = currentItems.filter(item => {
+                    if (typeof item[idField] === 'number' && typeof itemId === 'string') {
+                        return item[idField] !== parseInt(itemId);
+                    }
+                    return item[idField] !== itemId;
+                });
+                
+                // 重新显示数据项列表
+                displayItems(currentItems, dataType);
+                
+                alert('数据项已删除');
+            } catch (error) {
+                console.error('删除数据失败:', error);
+                alert('删除失败: ' + error.message);
+            }
+        }
+        
+        // 保存项目顺序
+        async function saveItemsOrder() {
+            try {
+                const newOrder = Array.from(document.querySelectorAll('.data-item-row'))
+                    .map(el => el.getAttribute('data-id'));
+                
+                const response = await fetch(`/api/${dataType}/reorder`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ order: newOrder })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`服务器返回错误: ${response.status}`);
+                }
+                
+                document.getElementById('saveOrder').classList.add('hidden');
+                alert('排序已保存');
+                
+                // 重新加载数据以显示新顺序
+                await loadItems(dataType);
+            } catch (error) {
+                console.error('保存排序失败:', error);
+                alert('保存排序失败: ' + error.message);
+            }
+        }
+
+        function displayItems(items, dataType) {
+            const itemsList = document.getElementById('dataItemsList');
+            const emptyState = document.getElementById('emptyState');
+            
+            // 清空当前列表，保留空状态消息
+            while (itemsList.firstChild) {
+                if (itemsList.firstChild === emptyState) {
+                    break;
+                }
+                itemsList.removeChild(itemsList.firstChild);
+            }
+            
+            // 显示或隐藏空状态
+            if (!items || items.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'data-item-row';
+                
+                // 设置正确的ID属性
+                if (dataType === 'customer-intentions') {
+                    itemElement.setAttribute('data-id', item.level || '');
+                } else {
+                    itemElement.setAttribute('data-id', item.id || '');
+                }
+                
+                // 准备要显示的数据
+                let displayText = '';
+                
+                switch(dataType) {
+                    case 'customer-intentions':
+                        displayText = `${item.name} - ${item.description} (${item.level})`;
+                        break;
+                    case 'budget-ranges':
+                        displayText = item.name || '未知';
+                        break;
+                    case 'superior-contacts':
+                        const superiorDirectText = item.isDirect ? '[直属]' : '[非直属]';
+                        const superiorCompanyText = item.company ? `（${item.company}）` : '';
+                        displayText = `${item.name}${superiorCompanyText} ${superiorDirectText}`;
+                        break;
+                    case 'subordinate-contacts':
+                        const subordinateDirectText = item.isDirect ? '[直属]' : '[非直属]';
+                        const subordinateCompanyText = item.company ? `（${item.company}）` : '';
+                        displayText = `${item.name}${subordinateCompanyText} ${subordinateDirectText}`;
+                        break;
+                    case 'preset-products':
+                        displayText = item.productName ? `${item.productName} - ¥${item.price}` : '未知产品';
+                        break;
+                    case 'visit-types':
+                        displayText = item.name || '未知回访类型';
+                        break;
+                    case 'navigation-modes':
+                        displayText = item.name || '未知导航模式';
+                        break;
+                    case 'reminder-cycles':
+                        displayText = item.name || '未知提醒周期';
+                        break;
+                    default:
+                        displayText = item.name || '未知';
+                }
+                
+                itemElement.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="sortable-handle">
+                            <i class="fas fa-grip-lines"></i>
+                        </span>
+                        <div class="data-item-info">
+                            <div class="font-medium">${displayText}</div>
+                        </div>
+                    </div>
+                    <div class="item-action-buttons flex space-x-3">
+                        <button class="edit-btn text-blue-500 flex items-center">
+                            <i class="fas fa-edit mr-1"></i>
+                            <span class="text-xs">编辑</span>
+                        </button>
+                        <button class="delete-btn text-red-500 flex items-center">
+                            <i class="fas fa-trash-alt mr-1"></i>
+                            <span class="text-xs">删除</span>
+                        </button>
+                    </div>
+                `;
+                
+                // 添加编辑按钮事件
+                itemElement.querySelector('.edit-btn').addEventListener('click', function() {
+                    showEditItemModal(item, dataType);
+                });
+                
+                // 添加删除按钮事件
+                itemElement.querySelector('.delete-btn').addEventListener('click', function() {
+                    showDeleteConfirmModal(item, dataType);
+                });
+                
+                itemsList.insertBefore(itemElement, emptyState);
+            });
+        }
+
+        // 显示添加表单
+        function showAddFormForType(dataType) {
+            document.getElementById('modalTitle').textContent = '添加数据项';
+            document.getElementById('editItemForm').reset();
+            
+            // 清除当前项目ID
+            currentItemId = null;
+            
+            // 显示当前数据类型的表单字段
+            showFormFieldsByType();
+        }
+        
+        // 获取数据类型标题
+        function getDataTypeTitle(dataType) {
+            const titleMap = {
+                'customer-categories': '客户分类',
+                'customer-intentions': '客户意向等级',
+                'regions': '地区',
+                'budget-ranges': '预算范围',
+                'superior-contacts': '上级联系人',
+                'subordinate-contacts': '下级联系人',
+                'preset-products': '产品管理',
+                'visit-types': '回访类型',
+                'navigation-modes': '导航模式',
+                'reminder-cycles': '提醒周期'
+            };
+            
+            return titleMap[dataType] || '数据项';
+        }
+        
+        // 显示删除确认对话框
+        function showDeleteConfirmModal(item, dataType) {
+            // 根据数据类型设置当前项目ID
+            if (dataType === 'customer-intentions') {
+                currentItemId = item.level;
+            } else {
+                currentItemId = item.id;
+            }
+            
+            // 显示删除确认对话框
+            deleteConfirmModal.classList.add('active');
+        }
+    });
+    </script>
+</body>
+</html> 

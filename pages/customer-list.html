@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户列表 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <script type="module">
+        import { createAvatar } from '../js/components/avatar.js';
+        window.createAvatar = createAvatar; // 使其在全局可用
+    </script>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏（隐藏） -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="dashboard.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>客户列表</div>
+            <div class="title-bar-right">
+                <a href="customer-add.html" id="addCustomerBtn">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <!-- 客户列表 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <div class="flex justify-between items-center">
+                        <h2 class="card-title">客户列表</h2>
+                        <a href="customer-add.html" class="ios-button-small">
+                            <i class="fas fa-plus mr-1"></i> 添加客户
+                        </a>
+                    </div>
+                    <div class="ios-search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="搜索客户名称、地区或电话...">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="customers-container">
+                        <div id="customersContainer" class="customers-list">
+                            <!-- 客户列表项将由JavaScript动态填充 -->
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <div>加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 客户统计 -->
+            <div class="ios-card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title">客户统计</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="ios-stat-card">
+                            <div class="stat-title">客户总数</div>
+                            <div class="stat-value" id="totalCustomerCount">0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">本月新增</div>
+                            <div class="stat-value" id="monthlyNewCustomers">0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">高意向客户</div>
+                            <div class="stat-value" id="highIntentionCount">0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">活跃地区</div>
+                            <div class="stat-value" id="topRegion">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <!-- 引入脚本 -->
+    <script src="../js/storage-polyfill.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从API获取客户列表数据
+            fetchCustomers();
+            
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterCustomers(searchTerm);
+            });
+            
+            function fetchCustomers() {
+                fetch('/api/customers')
+                    .then(response => response.json())
+                    .then(customers => {
+                        // 保存客户数据到全局变量，用于搜索功能
+                        window.customersData = customers;
+                        displayCustomers(customers);
+                        updateCustomerCount(customers.length);
+                        calculateCustomerStatistics(customers);
+                    })
+                    .catch(error => {
+                        console.error('获取客户列表失败:', error);
+                        document.getElementById('customersContainer').innerHTML = `
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-red-500 text-center">
+                                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                                    <div>加载失败，请重试</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+            }
+            
+            function displayCustomers(customers) {
+                const container = document.getElementById('customersContainer');
+                
+                if (customers.length === 0) {
+                    container.innerHTML = `
+                        <div class="flex justify-center items-center py-10">
+                            <div class="text-gray-400 text-center">
+                                <i class="fas fa-users-slash text-2xl mb-2"></i>
+                                <div>暂无客户信息</div>
+                                <a href="customer-add.html" class="text-blue-500 mt-2 inline-block">
+                                    <i class="fas fa-plus-circle mr-1"></i>添加客户
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                customers.forEach(customer => {
+                    // 获取意向标签的CSS类
+                    let intentionClass = 'intention-d';
+                    if (customer.intention === 'H') intentionClass = 'intention-h';
+                    else if (customer.intention === 'A') intentionClass = 'intention-a';
+                    else if (customer.intention === 'B') intentionClass = 'intention-b';
+                    else if (customer.intention === 'C') intentionClass = 'intention-c';
+                    
+                    // 客户分类图标
+                    let categoryIcon = 'user';
+                    if (customer.category === 'VIP客户') categoryIcon = 'crown';
+                    else if (customer.category === '代理商') categoryIcon = 'building';
+                    
+                    html += `
+                        <a href="customer-detail.html?id=${customer.id}" class="list-item border-b p-4">
+                            <div class="flex items-center w-full">
+                                <div class="mr-3" id="avatar-${customer.id}">
+                                    <!-- 头像将由JavaScript动态插入 -->
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-center">
+                                        <div class="font-medium">${customer.name}</div>
+                                        <span class="${intentionClass} text-xs">${customer.intention || '无'}</span>
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <span class="mr-2"><i class="fas fa-map-marker-alt mr-1"></i>${app.presetData.getRegionName(customer.region) || '未知地区'}</span>
+                                        <span><i class="fas fa-phone-alt mr-1"></i>${customer.phone || '无电话'}</span>
+                                    </div>
+                                </div>
+                                <div class="list-item-arrow ml-2">
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+                // 为每个客户创建头像
+                customers.forEach(customer => {
+                    const avatarContainer = document.getElementById(`avatar-${customer.id}`);
+                    if (avatarContainer) {
+                        const avatar = createAvatar(customer.name, customer.gender);
+                        avatarContainer.appendChild(avatar);
+                    }
+                });
+            }
+            
+            function filterCustomers(searchTerm) {
+                if (!window.customersData) return;
+                
+                if (!searchTerm) {
+                    displayCustomers(window.customersData);
+                    updateCustomerCount(window.customersData.length);
+                    return;
+                }
+                
+                const filtered = window.customersData.filter(customer => {
+                    return (
+                        (customer.name && customer.name.toLowerCase().includes(searchTerm)) ||
+                        (customer.region && customer.region.toLowerCase().includes(searchTerm)) ||
+                        (customer.phone && customer.phone.includes(searchTerm))
+                    );
+                });
+                
+                displayCustomers(filtered);
+                updateCustomerCount(filtered.length);
+            }
+            
+            function updateCustomerCount(count) {
+                document.getElementById('totalCustomerCount').textContent = count;
+            }
+            
+            // 计算客户统计数据
+            function calculateCustomerStatistics(customers) {
+                // 获取当前日期
+                const now = new Date();
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                
+                // 本月新增客户数
+                const monthlyNewCustomers = customers.filter(customer => {
+                    if (!customer.registration_date) return false;
+                    const registrationDate = new Date(customer.registration_date);
+                    return registrationDate >= firstDayOfMonth;
+                }).length;
+                
+                document.getElementById('monthlyNewCustomers').textContent = monthlyNewCustomers;
+                
+                // 高意向客户数量 (H和A级)
+                const highIntentionCustomers = customers.filter(customer => {
+                    return customer.intention === 'H' || customer.intention === 'A';
+                }).length;
+                
+                document.getElementById('highIntentionCount').textContent = highIntentionCustomers;
+                
+                // 活跃地区 (出现频率最高的地区)
+                const regionCounts = {};
+                customers.forEach(customer => {
+                    if (customer.region) {
+                        regionCounts[customer.region] = (regionCounts[customer.region] || 0) + 1;
+                    }
+                });
+                
+                let topRegion = { id: '-', count: 0 };
+                
+                for (const region in regionCounts) {
+                    if (regionCounts[region] > topRegion.count) {
+                        topRegion = { id: region, count: regionCounts[region] };
+                    }
+                }
+                
+                // 如果找到了活跃地区且看起来是ID格式(字符串格式，如"region-1")，从API获取地区名称
+                if (topRegion.id !== '-' && topRegion.id.startsWith('region-')) {
+                    api.get('/regions')
+                        .then(regions => {
+                            const matchedRegion = regions.find(r => r.id === topRegion.id);
+                            if (matchedRegion) {
+                                document.getElementById('topRegion').textContent = matchedRegion.name;
+                            } else {
+                                document.getElementById('topRegion').textContent = topRegion.id;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('获取地区数据失败:', error);
+                            document.getElementById('topRegion').textContent = topRegion.id;
+                        });
+                } else {
+                    document.getElementById('topRegion').textContent = topRegion.id;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

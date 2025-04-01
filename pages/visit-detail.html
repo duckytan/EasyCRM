@@ -1,0 +1,172 @@
+<style>
+    /* 回访记录详情中的客户意向样式 */
+    .intention-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        font-weight: bold;
+        margin-left: 10px;
+        text-align: center;
+    }
+    
+    .intention-badge-h {
+        background-color: rgba(239, 68, 68, 0.85);
+        color: white;
+    }
+    
+    .intention-badge-a {
+        background-color: rgba(245, 158, 11, 0.85);
+        color: white;
+    }
+    
+    .intention-badge-b {
+        background-color: rgba(252, 211, 77, 0.85);
+        color: black;
+    }
+    
+    .intention-badge-c {
+        background-color: rgba(16, 185, 129, 0.8);
+        color: black;
+    }
+    
+    .intention-badge-d {
+        background-color: rgba(99, 102, 241, 0.8);
+        color: white;
+    }
+    
+    /* 深色模式 */
+    :root[data-theme="dark"] .intention-badge-h {
+        background-color: rgba(248, 113, 113, 0.8);
+    }
+    
+    :root[data-theme="dark"] .intention-badge-a {
+        background-color: rgba(251, 191, 36, 0.8);
+    }
+    
+    :root[data-theme="dark"] .intention-badge-b {
+        background-color: rgba(253, 230, 138, 0.85);
+    }
+    
+    :root[data-theme="dark"] .intention-badge-c {
+        background-color: rgba(110, 231, 183, 0.8);
+    }
+    
+    :root[data-theme="dark"] .intention-badge-d {
+        background-color: rgba(165, 180, 252, 0.8);
+    }
+    
+    /* 强化标签和内容的对比度 */
+    .detail-label {
+        font-weight: 600;
+        font-size: 15px;
+        color: #4b5563;
+    }
+    
+    .detail-content {
+        font-size: 16px;
+        color: #111827;
+        line-height: 1.5;
+    }
+    
+    :root[data-theme="dark"] .detail-label {
+        color: #d1d5db;
+    }
+    
+    :root[data-theme="dark"] .detail-content {
+        color: #f9fafb;
+    }
+
+    /* 统一各类型标签样式 */
+    .mb-4 .detail-label {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #4b5563 !important;
+        margin-bottom: 4px !important;
+        white-space: nowrap !important;
+    }
+
+    :root[data-theme="dark"] .mb-4 .detail-label {
+        color: #d1d5db !important;
+    }
+</style> 
+
+function displayVisitDetail(visit) {
+    const detailContainer = document.getElementById('visitDetailContainer');
+    
+    if (!visit) {
+        detailContainer.innerHTML = `
+            <div class="ios-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle text-red-500 text-3xl"></i>
+                    <p class="mt-2">未找到回访记录</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // 格式化日期时间
+    const visitDate = new Date(visit.visitTime).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    // 准备意向标志样式
+    const intentionClass = visit.intention ? 
+        `intention-badge intention-badge-${visit.intention.toLowerCase()}` : '';
+    
+    // 构建详情内容
+    const html = `
+        <div class="ios-card mb-4">
+            <div class="card-header">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">回访详情</h3>
+                    <div class="flex items-center">
+                        <span class="text-sm text-gray-600">客户意向</span>
+                        <div class="${intentionClass}">${visit.intention || '无'}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="detail-label mb-1">回访时间</div>
+                    <div class="detail-content">${visitDate}</div>
+                </div>
+                <div class="mb-4">
+                    <div class="detail-label mb-1">回访内容</div>
+                    <div class="detail-content">${visit.content || '无'}</div>
+                </div>
+                <div class="mb-4">
+                    <div class="detail-label mb-1">回访效果</div>
+                    <div class="detail-content">${visit.effect || '无'}</div>
+                </div>
+                <div class="mb-4">
+                    <div class="detail-label mb-1">后续跟进</div>
+                    <div class="detail-content">${visit.followUp || '无'}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex space-x-4">
+            <a href="visit-edit.html?id=${visit.id}" class="ios-button-primary flex-1">
+                <i class="fas fa-edit mr-2"></i>编辑回访
+            </a>
+            <button id="deleteVisitBtn" class="ios-button-danger flex-1">
+                <i class="fas fa-trash-alt mr-2"></i>删除回访
+            </button>
+        </div>
+    `;
+    
+    detailContainer.innerHTML = html;
+    
+    // 添加删除按钮事件
+    document.getElementById('deleteVisitBtn').addEventListener('click', function() {
+        confirmDelete(visit.id);
+    });
+} 

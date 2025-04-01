@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加购买记录 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+        /* 自定义下拉框中的价格样式 */
+        select.product-price-dropdown option {
+            color: initial; /* 确保文本颜色正常 */
+        }
+        
+        /* 使用伪元素和特殊选择器来尝试为价格添加样式 */
+        @supports (-webkit-appearance: none) or (-moz-appearance: none) or (appearance: none) {
+            select.product-price-dropdown {
+                color: #000; /* 黑色文本 */
+            }
+            
+            /* 对齐修复 */
+            select.product-price-dropdown option {
+                padding-right: 20px;
+            }
+        }
+        
+        /* 自定义下拉框样式 */
+        .price-styled-select {
+            position: relative;
+            width: 100%;
+        }
+        
+        .price-styled-select:after {
+            content: '¥';
+            color: #3498db;
+            pointer-events: none;
+        }
+        
+        /* 确保下拉框中的价格文本与产品名称在同一行 */
+        #presetProduct option {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* 为下拉框添加样式 */
+        select#presetProduct {
+            padding-right: 10px; /* 为价格留出空间 */
+            font-family: monospace; /* 等宽字体有助于对齐 */
+        }
+        
+        /* 通过伪元素修饰下拉框 */
+        .ios-form-group:has(#presetProduct) {
+            position: relative;
+        }
+        
+        /* 预设产品价格和单价彩色标记 */
+        .price-tag {
+            color: #3498db;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="product-management.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>添加购买记录</div>
+            <div class="title-bar-right"></div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <form id="productForm" class="ios-card">
+                <div class="card-body">
+                    <!-- 客户信息 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">选择客户 <span class="text-red-500">*</span></label>
+                        <select id="customerId" class="ios-form-input" required>
+                            <option value="">-- 请选择客户 --</option>
+                            <!-- 客户列表将通过JavaScript动态填充 -->
+                        </select>
+                    </div>
+                    
+                    <!-- 产品信息 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">预设产品</label>
+                        <select id="presetProduct" class="ios-form-input">
+                            <option value="">-- 请选择预设产品 --</option>
+                            <!-- 预设产品列表将通过JavaScript动态填充 -->
+                        </select>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span>选择预设产品或直接在下方输入自定义产品信息</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">产品名称 <span class="text-red-500">*</span></label>
+                        <input type="text" id="productName" class="ios-form-input" required placeholder="请输入产品名称">
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">数量</label>
+                        <input type="number" id="quantity" class="ios-form-input" min="1" value="1">
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">产品单价</label>
+                        <div class="flex items-center">
+                            <span class="mr-2">¥</span>
+                            <input type="number" id="price" class="ios-form-input" step="0.01" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">总价</label>
+                        <div class="flex items-center">
+                            <span class="mr-2">¥</span>
+                            <input type="number" id="totalPrice" class="ios-form-input" step="0.01" min="0">
+                            <span id="discountRate" class="ml-2 text-xs text-green-500"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">购买日期</label>
+                        <input type="date" id="purchaseDate" class="ios-form-input">
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">产品回访日期</label>
+                        <input type="date" id="followUpDate" class="ios-form-input">
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span>默认为购买日期后90天</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="ios-button-primary mt-4">保存购买记录</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载客户列表填充下拉选择框
+            loadCustomers();
+            
+            // 加载预设产品列表
+            loadPresetProducts();
+            
+            // 设置购买日期的默认值为今天
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('purchaseDate').value = today;
+            
+            // 计算默认回访日期（购买日期+90天）
+            const defaultFollowUpDate = calculateFollowUpDate(today);
+            document.getElementById('followUpDate').value = defaultFollowUpDate;
+            
+            // 记录计算得到的总价
+            let calculatedTotalPrice = 0;
+            
+            // 监听预设产品选择变化，自动填充产品名称和价格
+            document.getElementById('presetProduct').addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (this.value) {
+                    // 如果选择了预设产品，则自动填充产品名称和价格
+                    document.getElementById('productName').value = this.value;
+                    const productPrice = selectedOption.getAttribute('data-price');
+                    if (productPrice) {
+                        document.getElementById('price').value = productPrice;
+                        updateTotalPrice();
+                    }
+                }
+            });
+            
+            // 监听数量和单价变化，自动计算总价
+            document.getElementById('quantity').addEventListener('input', updateTotalPrice);
+            document.getElementById('price').addEventListener('input', updateTotalPrice);
+            
+            // 监听总价变化，计算折扣率
+            document.getElementById('totalPrice').addEventListener('input', function() {
+                if (calculatedTotalPrice > 0) {
+                    const userInputTotal = parseFloat(this.value) || 0;
+                    if (userInputTotal > 0 && userInputTotal !== calculatedTotalPrice) {
+                        // 计算折扣率
+                        const discountRate = (userInputTotal / calculatedTotalPrice * 100).toFixed(1);
+                        document.getElementById('discountRate').textContent = `折扣率: ${discountRate}%`;
+                    } else {
+                        document.getElementById('discountRate').textContent = '';
+                    }
+                }
+            });
+            
+            // 监听购买日期变化，自动更新回访日期
+            document.getElementById('purchaseDate').addEventListener('change', function() {
+                const purchaseDate = this.value;
+                if (purchaseDate) {
+                    document.getElementById('followUpDate').value = calculateFollowUpDate(purchaseDate);
+                }
+            });
+            
+            // 计算总价函数
+            function updateTotalPrice() {
+                const quantity = parseInt(document.getElementById('quantity').value) || 0;
+                const price = parseFloat(document.getElementById('price').value) || 0;
+                calculatedTotalPrice = quantity * price;
+                
+                // 更新总价输入框
+                document.getElementById('totalPrice').value = calculatedTotalPrice.toFixed(2);
+                // 清除折扣率显示
+                document.getElementById('discountRate').textContent = '';
+            }
+            
+            // 表单提交处理
+            document.getElementById('productForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const customerId = document.getElementById('customerId').value;
+                if (!customerId) {
+                    showToast('请选择客户', 'error');
+                    return;
+                }
+                
+                const productName = document.getElementById('productName').value;
+                if (!productName) {
+                    showToast('请输入产品名称', 'error');
+                    return;
+                }
+                
+                const quantity = document.getElementById('quantity').value || 1;
+                const price = document.getElementById('price').value || 0;
+                const totalPrice = document.getElementById('totalPrice').value || 0;
+                const purchaseDate = document.getElementById('purchaseDate').value;
+                const followUpDate = document.getElementById('followUpDate').value;
+                
+                // 构建产品数据对象
+                const productData = {
+                    customerId: customerId,
+                    productName: productName,
+                    quantity: quantity,
+                    price: totalPrice > 0 && price > 0 ? (totalPrice / quantity) : price,
+                    purchaseDate: purchaseDate,
+                    followUpDate: followUpDate
+                };
+                
+                // 发送API请求创建购买记录
+                api.post('/products', productData)
+                    .then(response => {
+                        showToast('购买记录添加成功', 'success');
+                        document.getElementById('productForm').reset();
+                        // 重置表单后重新设置默认日期
+                        document.getElementById('purchaseDate').value = today;
+                        document.getElementById('followUpDate').value = calculateFollowUpDate(today);
+                        // 跳转回购买记录列表
+                        setTimeout(() => {
+                            window.location.href = 'product-management.html';
+                        }, 1500);
+                    })
+                    .catch(error => {
+                        showToast('添加购买记录失败: ' + (error.message || '未知错误'), 'error');
+                    });
+            });
+            
+            // 计算回访日期（购买日期+90天）
+            function calculateFollowUpDate(purchaseDateStr) {
+                if (!purchaseDateStr) return '';
+                
+                try {
+                    const purchaseDate = new Date(purchaseDateStr);
+                    const followUpDate = new Date(purchaseDate);
+                    followUpDate.setDate(followUpDate.getDate() + 90);
+                    return followUpDate.toISOString().split('T')[0];
+                } catch (error) {
+                    console.error('计算回访日期时出错:', error);
+                    return '';
+                }
+            }
+            
+            // 加载客户列表
+            function loadCustomers() {
+                api.get('/customers')
+                    .then(customers => {
+                        const customerSelect = document.getElementById('customerId');
+                        
+                        // 按名称排序
+                        customers.sort((a, b) => {
+                            if (a.name && b.name) {
+                                return a.name.localeCompare(b.name);
+                            }
+                            return 0;
+                        });
+                        
+                        customers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.id;
+                            option.textContent = customer.name || `客户 #${customer.id}`;
+                            customerSelect.appendChild(option);
+                        });
+                        
+                        // 如果URL中有customerId参数，则自动选择对应客户
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const preSelectedCustomerId = urlParams.get('customerId');
+                        if (preSelectedCustomerId) {
+                            customerSelect.value = preSelectedCustomerId;
+                            customerSelect.disabled = true; // 设置为禁用状态
+                            // 添加一个提示信息
+                            const customerFormGroup = customerSelect.closest('.ios-form-group');
+                            const helpText = document.createElement('div');
+                            helpText.className = 'text-xs text-gray-500 mt-1';
+                            helpText.textContent = '从客户页添加时不可更改客户';
+                            customerFormGroup.appendChild(helpText);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取客户列表失败:', error);
+                        showToast('获取客户列表失败，请刷新页面重试', 'error');
+                    });
+            }
+            
+            // 加载预设产品列表
+            function loadPresetProducts() {
+                api.get('/preset-products')
+                    .then(products => {
+                        const productSelect = document.getElementById('presetProduct');
+                        
+                        // 按显示顺序排序
+                        products.sort((a, b) => a.displayOrder - b.displayOrder);
+                        
+                        products.forEach(product => {
+                            const option = document.createElement('option');
+                            option.value = product.productName;
+                            
+                            // 格式化价格到两位小数
+                            const price = parseFloat(product.price || 0).toFixed(2);
+                            // 使用空格分隔产品名称和价格
+                            option.textContent = `${product.productName}     ¥${price}`;
+                            option.setAttribute('data-price', product.price);
+                            
+                            if (product.description) {
+                                option.setAttribute('title', `${product.description} (¥${price})`);
+                            }
+                            productSelect.appendChild(option);
+                        });
+                        
+                        // 添加自定义选项
+                        const customOption = document.createElement('option');
+                        customOption.value = "custom";
+                        customOption.textContent = "-- 自定义产品 --";
+                        productSelect.appendChild(customOption);
+                        
+                        // 监听自定义选项的选择
+                        productSelect.addEventListener('change', function() {
+                            if (this.value === 'custom') {
+                                // 如果选择了自定义，则将下拉框替换为输入框
+                                const parent = this.parentElement;
+                                
+                                // 创建输入框
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.id = 'productName';
+                                input.className = 'ios-form-input';
+                                input.required = true;
+                                input.placeholder = '请输入产品名称';
+                                
+                                // 替换下拉框
+                                parent.replaceChild(input, this);
+                                
+                                // 清空价格
+                                document.getElementById('price').value = '';
+                                
+                                // 聚焦到输入框
+                                input.focus();
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('获取预设产品列表失败:', error);
+                        showToast('获取预设产品列表失败，请刷新页面重试', 'error');
+                    });
+            }
+            
+            // 初始计算总价
+            updateTotalPrice();
+        });
+    </script>
+</body>
+</html> 

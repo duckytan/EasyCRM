@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-CRM 系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI-CRM 系统</h1>
+        
+        <div class="success">
+            <p><strong>提示：</strong> 已启动简化版服务器，可以使用以下链接测试系统功能。</p>
+        </div>
+        
+        <h2>测试链接</h2>
+        <ul>
+            <li><a href="/test" target="_blank">API测试页面</a> - 用于测试各API功能是否正常</li>
+            <li><a href="/pages/dashboard.html" target="_blank">系统仪表盘</a> - 访问主仪表盘</li>
+        </ul>
+        
+        <h2>系统信息</h2>
+        <ul>
+            <li>服务器状态: <span id="serverStatus">检查中...</span></li>
+            <li>API状态: <span id="apiStatus">检查中...</span></li>
+        </ul>
+        
+        <div class="warning">
+            <p><strong>注意：</strong> 如遇到问题，请参考 README.md 文件中的故障排除指南。</p>
+        </div>
+    </div>
+    
+    <script>
+        // 检查服务器状态
+        fetch('/api/test')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('serverStatus').textContent = '正常运行';
+                document.getElementById('serverStatus').style.color = 'green';
+                document.getElementById('apiStatus').textContent = '正常运行';
+                document.getElementById('apiStatus').style.color = 'green';
+            })
+            .catch(error => {
+                document.getElementById('serverStatus').textContent = '连接失败';
+                document.getElementById('serverStatus').style.color = 'red';
+                document.getElementById('apiStatus').textContent = '不可用';
+                document.getElementById('apiStatus').style.color = 'red';
+                console.error('API 连接错误:', error);
+            });
+    </script>
+</body>
+</html>

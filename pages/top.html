@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>状态栏组件</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 状态栏固定 */
+        .ios-status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            z-index: 1001;
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 24px;
+        }
+        
+        .status-bar-time {
+            font-weight: 500;
+        }
+        
+        .status-bar-icons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* 桌面端响应式布局 */
+        @media (min-width: 768px) {
+            .ios-status-bar {
+                width: 100%;
+                max-width: 768px;
+                left: 50%;
+                transform: translateX(-50%);
+                box-sizing: border-box;
+                position: fixed;
+            }
+        }
+        
+        /* 修复桌面端显示错位问题 */
+        @media screen and (min-width: 1024px) {
+            .ios-status-bar {
+                max-width: 768px;
+                width: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+        
+        /* 当状态栏隐藏时，不占用空间 */
+        .ios-status-bar[style*="display: none"] {
+            position: absolute;
+            height: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- 状态栏 -->
+    <div class="ios-status-bar">
+        <div class="status-bar-time">14:30</div>
+        <div class="status-bar-icons">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-three-quarters"></i>
+        </div>
+    </div>
+</body>
+</html>

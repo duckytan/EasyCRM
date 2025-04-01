@@ -1,0 +1,49 @@
+<!-- 底部标签栏 -->
+<div class="ios-tab-bar">
+    <a href="dashboard.html" id="nav-home" class="ios-tab-item">
+        <i class="fas fa-home"></i>
+        <span>主页</span>
+    </a>
+    <a href="customer-list.html" id="nav-customer" class="ios-tab-item">
+        <i class="fas fa-users"></i>
+        <span>客户</span>
+    </a>
+    <a href="product-management.html" id="nav-product" class="ios-tab-item">
+        <i class="fas fa-shopping-bag"></i>
+        <span>购买</span>
+    </a>
+    <a href="visit-records.html" id="nav-visit" class="ios-tab-item">
+        <i class="fas fa-calendar-check"></i>
+        <span>回访</span>
+    </a>
+    <a href="settings.html" id="nav-settings" class="ios-tab-item">
+        <i class="fas fa-cog"></i>
+        <span>设置</span>
+    </a>
+</div>
+
+<script>
+// 根据当前页面设置活动的导航项
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取当前页面名称
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    // 移除所有导航项的active类
+    document.querySelectorAll('.ios-tab-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // 根据当前页面添加active类
+    if (currentPage.includes('dashboard')) {
+        document.getElementById('nav-home').classList.add('active');
+    } else if (currentPage.includes('customer')) {
+        document.getElementById('nav-customer').classList.add('active');
+    } else if (currentPage.includes('product')) {
+        document.getElementById('nav-product').classList.add('active');
+    } else if (currentPage.includes('visit')) {
+        document.getElementById('nav-visit').classList.add('active');
+    } else if (currentPage.includes('settings') || currentPage.includes('preset-data')) {
+        document.getElementById('nav-settings').classList.add('active');
+    }
+});
+</script> 

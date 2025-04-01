@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏（隐藏） -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <i class="fas fa-bell text-blue-500" id="notificationBell"></i>
+            </div>
+            <div>主页</div>
+            <div class="title-bar-right">
+                <a href="settings.html">
+                    <i class="fas fa-cog text-blue-500"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 欢迎区域 -->
+        <div class="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl m-4 shadow-sm border border-blue-100 relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center mb-1">
+                    <i class="fas fa-smile text-blue-500 mr-2"></i>
+                    <h2 class="text-xl font-bold text-gray-800">欢迎回来，管理员</h2>
+                </div>
+                <p class="text-blue-700 font-medium cursor-pointer" id="welcomeMessage">
+                    <i class="fas fa-sync-alt fa-spin text-blue-400 mr-1"></i>
+                    加载中...
+                </p>
+            </div>
+            <div class="absolute top-0 right-0 w-24 h-24 bg-blue-100 rounded-full opacity-50 transform translate-x-6 -translate-y-6"></div>
+            <div class="absolute bottom-0 left-0 w-16 h-16 bg-indigo-100 rounded-full opacity-50 transform -translate-x-4 translate-y-4"></div>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 统计卡片区域 -->
+            <div class="ios-card mb-6">
+                <div class="card-header flex items-center">
+                    <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
+                    <span class="font-bold">本月数据</span>
+                    <span class="text-xs text-gray-500 ml-2">月度业绩一览</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- 左侧销售业绩数据 -->
+                        <div class="ios-stat-card relative overflow-hidden">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-dollar-sign text-blue-500 mr-2"></i>
+                                <div class="stat-title">本月销售额</div>
+                            </div>
+                            <div class="stat-value text-blue-500 text-xl font-bold" id="monthlySalesAmount">¥0</div>
+                            <div class="absolute top-0 right-0 opacity-10">
+                                <i class="fas fa-chart-line text-blue-500 text-3xl"></i>
+                            </div>
+                        </div>
+                        <div class="ios-stat-card relative overflow-hidden">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-shopping-cart text-green-500 mr-2"></i>
+                                <div class="stat-title">本月订单数</div>
+                            </div>
+                            <div class="stat-value text-green-500 text-xl font-bold" id="monthlyOrderCount">0</div>
+                            <div class="absolute top-0 right-0 opacity-10">
+                                <i class="fas fa-box text-green-500 text-3xl"></i>
+                            </div>
+                        </div>
+                        <div class="ios-stat-card relative overflow-hidden">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-coins text-purple-500 mr-2"></i>
+                                <div class="stat-title">客单价</div>
+                            </div>
+                            <div class="stat-value text-purple-500 text-xl font-bold" id="averageOrderValue">¥0</div>
+                            <div class="absolute top-0 right-0 opacity-10">
+                                <i class="fas fa-hand-holding-usd text-purple-500 text-3xl"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- 右侧客户运营数据 -->
+                        <div class="ios-stat-card relative overflow-hidden">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-user-plus text-orange-500 mr-2"></i>
+                                <div class="stat-title">新增客户</div>
+                            </div>
+                            <div class="stat-value text-orange-500 text-xl font-bold" id="monthlyNewCustomers">0</div>
+                            <div class="absolute top-0 right-0 opacity-10">
+                                <i class="fas fa-users text-orange-500 text-3xl"></i>
+                            </div>
+                        </div>
+                        <div class="ios-stat-card relative overflow-hidden">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-phone-alt text-indigo-500 mr-2"></i>
+                                <div class="stat-title">跟进次数</div>
+                            </div>
+                            <div class="stat-value text-indigo-500 text-xl font-bold" id="monthlyVisitCount">0</div>
+                            <div class="absolute top-0 right-0 opacity-10">
+                                <i class="fas fa-clipboard-list text-indigo-500 text-3xl"></i>
+                            </div>
+                        </div>
+                        <div class="ios-stat-card relative overflow-hidden">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-handshake text-red-500 mr-2"></i>
+                                <div class="stat-title">成交客户</div>
+                            </div>
+                            <div class="stat-value text-red-500 text-xl font-bold" id="monthlyDealCustomers">0</div>
+                            <div class="absolute top-0 right-0 opacity-10">
+                                <i class="fas fa-trophy text-red-500 text-3xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 客户意向分布 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-pie text-blue-500 mr-2"></i>
+                    客户意向分布
+                </div>
+                <div class="card-body">
+                    <div class="intention-distribution">
+                        <div class="intention-item">
+                            <div class="intention-level">H级</div>
+                            <div class="intention-count intention-h" id="intentionH">0</div>
+                        </div>
+                        <div class="intention-item">
+                            <div class="intention-level">A级</div>
+                            <div class="intention-count intention-a" id="intentionA">0</div>
+                        </div>
+                        <div class="intention-item">
+                            <div class="intention-level">B级</div>
+                            <div class="intention-count intention-b" id="intentionB">0</div>
+                        </div>
+                        <div class="intention-item">
+                            <div class="intention-level">C级</div>
+                            <div class="intention-count intention-c" id="intentionC">0</div>
+                        </div>
+                        <div class="intention-item">
+                            <div class="intention-level">D级</div>
+                            <div class="intention-count intention-d" id="intentionD">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 待办事项卡片 -->
+            <div class="ios-card mb-6">
+                <div class="card-header flex justify-between items-center">
+                    <div>
+                        <i class="fas fa-tasks mr-2 text-blue-500"></i> 重要提醒
+                    </div>
+                    <div class="flex items-center">
+                        <select id="reminderCycleSelect" class="text-sm bg-white border border-gray-300 rounded-md px-2 py-1 dark-mode-select">
+                            <option value="loading">加载中...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-0" id="todayVisitsContainer">
+                    <div class="flex justify-center items-center py-10">
+                        <div class="text-gray-400">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <div>加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示今天的日期和星期
+            const today = new Date();
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const weekday = weekdays[today.getDay()];
+            
+            // 全局变量存储提醒数据和提醒周期
+            let allReminders = [];
+            let selectedCycleDays = 7; // 默认7天内
+            let reminderCycles = [];
+            
+            // 添加铃铛点击事件
+            document.getElementById('notificationBell').addEventListener('click', scrollToReminders);
+            
+            // 加载提醒周期数据
+            loadReminderCycles();
+            
+            // 加载所有统计数据
+            loadDashboardData();
+            
+            // 监听提醒周期选择变化
+            document.getElementById('reminderCycleSelect').addEventListener('change', function() {
+                selectedCycleDays = parseInt(this.value, 10);
+                filterAndDisplayReminders();
+            });
+            
+            // 加载提醒周期数据
+            function loadReminderCycles() {
+                return api.get('/reminder-cycles')
+                    .then(data => {
+                        reminderCycles = data;
+                        const selectElement = document.getElementById('reminderCycleSelect');
+                        selectElement.innerHTML = '';
+                        
+                        data.forEach(cycle => {
+                            const option = document.createElement('option');
+                            option.value = cycle.days;
+                            option.textContent = cycle.name;
+                            selectElement.appendChild(option);
+                        });
+                        
+                        // 默认选择7天内
+                        const defaultOption = Array.from(selectElement.options).find(option => option.value === '7');
+                        if (defaultOption) {
+                            defaultOption.selected = true;
+                            selectedCycleDays = 7;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('加载提醒周期失败:', error);
+                        const selectElement = document.getElementById('reminderCycleSelect');
+                        selectElement.innerHTML = '<option value="7">7天内</option>';
+                    });
+            }
+            
+            function loadDashboardData() {
+                return api.get('/dashboard/statistics')
+                    .then(data => {
+                        // 更新欢迎消息
+                        const todayReminders = getTodayReminders(data.importantReminders || []);
+                        const reminderCount = todayReminders.length;
+                        let pendingText = '';
+                        
+                        if (reminderCount > 0) {
+                            pendingText = `<i class="fas fa-exclamation-circle text-red-500 mr-1"></i>今日有 <span class="font-bold text-blue-600">${reminderCount}</span> 个重要提醒`;
+                        } else {
+                            pendingText = `<i class="fas fa-check-circle text-green-500 mr-1"></i>今日暂无重要提醒`;
+                        }
+                        
+                        const welcomeMessage = document.getElementById('welcomeMessage');
+                        welcomeMessage.innerHTML = pendingText;
+                        
+                        // 添加点击事件，点击跳转到重要提醒区域
+                        welcomeMessage.addEventListener('click', scrollToReminders);
+                        
+                        // 更新统计数据
+                        updateStatistics(data);
+                        
+                        return data;
+                    })
+                    .catch(error => {
+                        console.error('获取统计数据失败:', error);
+                        showToast('加载统计数据失败', 'error');
+                        throw error;
+                    });
+            }
+            
+            // 获取今日的提醒
+            function getTodayReminders(reminders) {
+                if (!reminders || reminders.length === 0) return [];
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // 设置为今天的00:00:00
+                
+                return reminders.filter(reminder => {
+                    const eventDate = new Date(reminder.eventTime);
+                    eventDate.setHours(0, 0, 0, 0);
+                    return eventDate.getTime() === today.getTime();
+                });
+            }
+            
+            // 跳转到重要提醒区域
+            function scrollToReminders() {
+                const remindersCard = document.querySelector('.ios-card:last-of-type');
+                if (remindersCard) {
+                    remindersCard.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            // 格式化金额显示
+            function formatAmount(amount) {
+                if (amount >= 10000) {
+                    // 转换为万元并保留一位小数
+                    const wan = (amount / 10000).toFixed(1);
+                    // 如果小数部分为0，则去掉小数部分
+                    return `¥${parseFloat(wan)}万`;
+                }
+                // 小于10000的金额保持原样显示，添加千位分隔符
+                return `¥${amount.toLocaleString()}`;
+            }
+            
+            // 更新统计数据
+            function updateStatistics(data) {
+                // 显示数据加载动画
+                animateStatValue('monthlySalesAmount', data.monthlySalesAmount, formatAmount);
+                animateStatValue('monthlyOrderCount', data.monthlyOrderCount);
+                animateStatValue('averageOrderValue', data.averageOrderValue, value => `¥${value.toLocaleString()}`);
+                animateStatValue('monthlyNewCustomers', data.monthlyNewCustomers);
+                animateStatValue('monthlyVisitCount', data.monthlyVisitCount);
+                animateStatValue('monthlyDealCustomers', data.monthlyDealCustomers);
+                
+                // 更新客户意向分布
+                updateIntentionDistribution(data.intentionDistribution);
+                
+                // 保存所有提醒数据
+                allReminders = data.importantReminders || [];
+                
+                // 按日期正序排列
+                allReminders.sort((a, b) => {
+                    const dateA = new Date(a.eventTime);
+                    const dateB = new Date(b.eventTime);
+                    return dateA - dateB;
+                });
+                
+                // 根据当前选择的提醒周期过滤并显示提醒
+                filterAndDisplayReminders();
+            }
+            
+            // 数字滚动动画函数
+            function animateStatValue(elementId, targetValue, formatFunc = value => value) {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                
+                // 如果目标值不是数字，直接设置
+                if (isNaN(targetValue)) {
+                    element.textContent = formatFunc(targetValue);
+                    return;
+                }
+                
+                // 设置初始值为0
+                let startValue = 0;
+                if (elementId === 'monthlySalesAmount') {
+                    startValue = 0;
+                } else if (targetValue > 100) {
+                    startValue = Math.floor(targetValue * 0.3);
+                }
+                
+                // 动画持续时间（毫秒）
+                const duration = 1200;
+                // 动画步数
+                const steps = 30;
+                // 计算每步增加的值
+                const stepValue = (targetValue - startValue) / steps;
+                // 计算每步时间间隔
+                const stepTime = duration / steps;
+                
+                // 当前值
+                let currentValue = startValue;
+                // 当前步数
+                let currentStep = 0;
+                
+                // 开始动画
+                const interval = setInterval(() => {
+                    currentStep++;
+                    
+                    if (currentStep >= steps) {
+                        // 动画结束
+                        clearInterval(interval);
+                        currentValue = targetValue;
+                    } else {
+                        // 计算当前值（使用缓动函数）
+                        const progress = currentStep / steps;
+                        const easedProgress = 1 - Math.pow(1 - progress, 3); // 缓出效果
+                        currentValue = startValue + (targetValue - startValue) * easedProgress;
+                    }
+                    
+                    // 更新显示
+                    element.textContent = formatFunc(Math.round(currentValue));
+                }, stepTime);
+            }
+            
+            // 根据所选提醒周期过滤并显示提醒
+            function filterAndDisplayReminders() {
+                if (!allReminders || allReminders.length === 0) {
+                    updateTodayVisits([]);
+                    return;
+                }
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // 设置为今天的00:00:00
+                
+                const filteredReminders = allReminders.filter(reminder => {
+                    const eventDate = new Date(reminder.eventTime);
+                    eventDate.setHours(0, 0, 0, 0); // 标准化事件日期到00:00:00
+                    
+                    // 计算日期差（天数）
+                    const diffTime = eventDate - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    // 只显示今天和未来selectedCycleDays天内的提醒
+                    return diffDays >= 0 && diffDays <= selectedCycleDays;
+                });
+                
+                updateTodayVisits(filteredReminders);
+            }
+            
+            function updateTodayVisits(reminders) {
+                const container = document.getElementById('todayVisitsContainer');
+                
+                if (!reminders || reminders.length === 0) {
+                    container.innerHTML = `
+                        <div class="flex justify-center items-center py-10">
+                            <div class="text-gray-400">
+                                <i class="fas fa-check-circle text-2xl mb-2"></i>
+                                <div>暂无重要提醒</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const html = reminders.map(reminder => {
+                    // 格式化日期显示
+                    let eventDate;
+                    try {
+                        // 处理日期字符串，确保格式正确
+                        if (reminder.eventTime) {
+                            // 确保只有日期部分
+                            if (reminder.eventTime.includes('T') || reminder.eventTime.includes(' ')) {
+                                // 如果包含时间部分，只取日期部分
+                                eventDate = formatDateToLocale(reminder.eventTime.split('T')[0].split(' ')[0]);
+                            } else {
+                                eventDate = formatDateToLocale(reminder.eventTime);
+                            }
+                        } else {
+                            eventDate = '未设置日期';
+                        }
+                    } catch (e) {
+                        console.error('日期格式化错误:', e, reminder.eventTime);
+                        eventDate = '日期格式错误';
+                    }
+                    
+                    // 计算日期差（天数）
+                    const eventDateObj = new Date(reminder.eventTime);
+                    const currentDate = new Date();
+                    const diffTime = eventDateObj - currentDate;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    // 设置提醒图标和急迫性标识
+                    let urgentIcon = '';
+                    if (diffDays <= 0) { // 今天
+                        urgentIcon = '<i class="fas fa-exclamation-circle text-red-500 text-lg absolute top-3 left-3"></i>';
+                    } else if (diffDays <= 3) { // 3天内
+                        urgentIcon = '<i class="fas fa-exclamation-circle text-yellow-500 text-base absolute top-3 left-3"></i>';
+                    }
+                    
+                    // 设置提醒类别的颜色类
+                    let eventTypeColorClass = '';
+                    switch(reminder.eventType) {
+                        case '客户生日':
+                            eventTypeColorClass = 'text-pink-500';
+                            break;
+                        case '计划回访':
+                        case '计划客户回访':
+                            eventTypeColorClass = 'text-blue-500';
+                            break;
+                        case '产品回访':
+                            eventTypeColorClass = 'text-green-500';
+                            break;
+                        default:
+                            eventTypeColorClass = 'text-gray-500';
+                    }
+                    
+                    // 根据不同的提醒类型设置不同的图标
+                    let icon = '';
+                    let bgColorClass = '';
+                    
+                    switch(reminder.eventType) {
+                        case '客户生日':
+                            icon = '<i class="fas fa-birthday-cake mr-1"></i>';
+                            bgColorClass = 'bg-pink-100';
+                            break;
+                        case '计划回访':
+                            icon = '<i class="fas fa-calendar-check mr-1"></i>';
+                            bgColorClass = 'bg-blue-100';
+                            break;
+                        case '计划客户回访':
+                            icon = '<i class="fas fa-user-clock mr-1"></i>';
+                            bgColorClass = 'bg-green-100';
+                            break;
+                        case '产品回访':
+                            icon = '<i class="fas fa-box mr-1"></i>';
+                            bgColorClass = 'bg-purple-100';
+                            break;
+                        default:
+                            icon = '<i class="fas fa-bell mr-1"></i>';
+                            bgColorClass = 'bg-gray-100';
+                    }
+                    
+                    // 构建提醒内容
+                    let content = reminder.content || '';
+                    if (reminder.eventType === '客户生日') {
+                        content = '生日提醒';
+                    }
+                    
+                    return `
+                        <div class="ios-list-item ${bgColorClass} relative">
+                            ${urgentIcon}
+                            <div class="list-item-content ${urgentIcon ? 'pl-5' : ''}">
+                                <div class="list-item-title">
+                                    ${icon}
+                                    ${reminder.customerName || '未命名客户'}
+                                    <span class="text-xs font-normal ${eventTypeColorClass} ml-1">${reminder.eventType}</span>
+                                </div>
+                                <div class="list-item-subtitle">${content || '无备注'}</div>
+                                <div class="list-item-detail">
+                                    <span class="text-blue-500">${eventDate}</span>
+                                </div>
+                            </div>
+                            <div class="list-item-actions">
+                                <a href="customer-detail.html?id=${reminder.customerId}" class="text-blue-500">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = html;
+            }
+            
+            function updateIntentionDistribution(distribution) {
+                if (!distribution) return;
+                
+                document.getElementById('intentionH').textContent = distribution.H || 0;
+                document.getElementById('intentionA').textContent = distribution.A || 0;
+                document.getElementById('intentionB').textContent = distribution.B || 0;
+                document.getElementById('intentionC').textContent = distribution.C || 0;
+                document.getElementById('intentionD').textContent = distribution.D || 0;
+            }
+        });
+    </script>
+</body>
+</html>

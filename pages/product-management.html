@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购买记录管理 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+        /* 增强购买记录管理页面的可读性 */
+        .purchase-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .purchase-item-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .purchase-item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .purchase-item-detail {
+            font-size: 14px;
+            color: #4b5563;
+            margin-top: 4px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .purchase-item-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #059669;
+        }
+        
+        .purchase-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 4px;
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+        
+        .purchase-date-tag {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .purchase-quantity-tag {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        /* 深色模式样式 */
+        :root[data-theme="dark"] .purchase-item {
+            border-bottom-color: #333;
+        }
+        
+        :root[data-theme="dark"] .purchase-item-title {
+            color: #f3f4f6;
+        }
+        
+        :root[data-theme="dark"] .purchase-item-detail {
+            color: #9ca3af;
+        }
+        
+        :root[data-theme="dark"] .purchase-item-price {
+            color: #10b981;
+        }
+        
+        :root[data-theme="dark"] .purchase-tag {
+            background-color: #374151;
+            color: #d1d5db;
+        }
+        
+        :root[data-theme="dark"] .purchase-date-tag {
+            background-color: #1e3a8a;
+            color: #93c5fd;
+        }
+        
+        :root[data-theme="dark"] .purchase-quantity-tag {
+            background-color: #065986;
+            color: #7dd3fc;
+        }
+        
+        /* 搜索框增强 */
+        .search-input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        :root[data-theme="dark"] .search-input:focus {
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="dashboard.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>购买记录管理</div>
+            <div class="title-bar-right">
+                <a href="product-add.html">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <div class="flex justify-between items-center">
+                        <h2 class="card-title">所有购买记录</h2>
+                        <a href="product-add.html" class="ios-button-small">
+                            <i class="fas fa-plus mr-1"></i> 添加记录
+                        </a>
+                    </div>
+                    <div class="ios-search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="搜索客户或产品...">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="purchase-records-container">
+                        <div id="purchaseRecordsList" class="purchase-records-list">
+                            <!-- 购买记录内容将通过JavaScript动态填充 -->
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <div>加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ios-card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title">购买统计</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="ios-stat-card">
+                            <div class="stat-title">本月购买记录</div>
+                            <div class="stat-value" id="monthlyRecordsCount">0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">本月销售额</div>
+                            <div class="stat-value" id="monthlySales">¥0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">客户购买频率</div>
+                            <div class="stat-value" id="purchaseFrequency">0次/月</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">热门产品</div>
+                            <div class="stat-value" id="topProduct">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <!-- 购买记录详情模态框 -->
+    <div id="purchaseRecordModal" class="ios-modal">
+        <div class="ios-modal-overlay"></div>
+        <div class="ios-modal-container">
+            <div class="ios-modal-header">
+                <h3>购买记录详情</h3>
+                <button class="ios-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body">
+                <div class="purchase-detail-container">
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">客户名称:</span>
+                        <span id="modalCustomerName" class="detail-value"></span>
+                    </div>
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">产品名称:</span>
+                        <span id="modalProductName" class="detail-value"></span>
+                    </div>
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">购买日期:</span>
+                        <span id="modalPurchaseDate" class="detail-value"></span>
+                    </div>
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">数量:</span>
+                        <span id="modalQuantity" class="detail-value"></span>
+                    </div>
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">单价:</span>
+                        <span id="modalPrice" class="detail-value"></span>
+                    </div>
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">总价:</span>
+                        <span id="modalTotalPrice" class="detail-value"></span>
+                    </div>
+                    <div class="purchase-detail-item">
+                        <span class="detail-label">产品回访:</span>
+                        <span id="modalFollowUpDate" class="detail-value"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="ios-modal-footer">
+                <button id="editRecordButton" class="ios-button-secondary">
+                    <i class="fas fa-edit mr-1"></i> 编辑
+                </button>
+                <button id="deleteRecordButton" class="ios-button-danger">
+                    <i class="fas fa-trash-alt mr-1"></i> 删除
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载所有购买记录
+            loadPurchaseRecords();
+            
+            // 计算统计数据
+            calculateStatistics();
+            
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterPurchaseRecords(searchTerm);
+            });
+            
+            // 模态框关闭功能
+            const modal = document.getElementById('purchaseRecordModal');
+            document.querySelector('.ios-modal-close').addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            // 删除记录按钮事件
+            document.getElementById('deleteRecordButton').addEventListener('click', function() {
+                const recordId = this.getAttribute('data-id');
+                if (confirm('确定要删除这条购买记录吗？此操作不可恢复。')) {
+                    deletePurchaseRecord(recordId);
+                }
+            });
+            
+            // 编辑记录按钮事件
+            document.getElementById('editRecordButton').addEventListener('click', function() {
+                const recordId = this.getAttribute('data-id');
+                window.location.href = `product-edit.html?id=${recordId}`;
+            });
+        });
+        
+        // 加载所有购买记录
+        function loadPurchaseRecords() {
+            api.get('/products')
+                .then(records => {
+                    const recordsList = document.getElementById('purchaseRecordsList');
+                    
+                    // 清空现有内容
+                    recordsList.innerHTML = '';
+                    
+                    if (records.length === 0) {
+                        recordsList.innerHTML = `
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-gray-400 text-center">
+                                    <i class="fas fa-box text-4xl text-gray-300"></i>
+                                    <div>暂无购买记录</div>
+                                    <a href="product-add.html" class="text-blue-500 mt-2 inline-block">
+                                        <i class="fas fa-plus-circle mr-1"></i>添加购买记录
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // 按日期排序，最新的在前面
+                    records.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
+                    
+                    // 创建记录列表
+                    records.forEach(record => {
+                        const purchaseDate = formatDateToLocale(record.purchaseDate);
+                        const totalPrice = (record.price * record.quantity).toFixed(2);
+                        
+                        const recordElement = document.createElement('div');
+                        recordElement.className = 'list-item border-b p-4';
+                        recordElement.setAttribute('data-record-id', record.id);
+                        recordElement.setAttribute('data-customer-id', record.customerId);
+                        recordElement.setAttribute('data-customer-name', record.customerName);
+                        recordElement.setAttribute('data-product-name', record.productName);
+                        recordElement.setAttribute('data-purchase-date', purchaseDate);
+                        recordElement.setAttribute('data-quantity', record.quantity);
+                        recordElement.setAttribute('data-price', record.price);
+                        recordElement.setAttribute('data-total-price', totalPrice);
+                        // 添加回访日期属性
+                        const followUpDate = formatDateToLocale(record.followUpDate);
+                        recordElement.setAttribute('data-follow-up-date', followUpDate);
+                        
+                        recordElement.innerHTML = `
+                            <div class="flex items-center w-full">
+                                <div class="mr-3">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-medium">${record.customerName || '未命名客户'}</div>
+                                        <div class="text-sm text-gray-500">${purchaseDate}</div>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">产品：${record.productName}</div>
+                                    <div class="text-sm text-gray-600 mb-1">数量：${record.quantity}</div>
+                                    <div class="text-sm text-green-600">总价：¥${totalPrice}</div>
+                                    <div class="text-sm text-blue-600">产品回访：${followUpDate || '暂无'}</div>
+                                </div>
+                                <div class="list-item-arrow ml-2">
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // 点击事件 - 打开详情模态框
+                        recordElement.addEventListener('click', function() {
+                            openRecordDetails(this);
+                        });
+                        
+                        recordsList.appendChild(recordElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载购买记录失败:', error);
+                    document.getElementById('purchaseRecordsList').innerHTML = `
+                        <div class="flex justify-center items-center py-10">
+                            <div class="text-red-500 text-center">
+                                <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                                <div>加载失败，请重试</div>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+        
+        // 打开记录详情模态框
+        function openRecordDetails(element) {
+            const modal = document.getElementById('purchaseRecordModal');
+            
+            // 填充模态框数据
+            document.getElementById('modalCustomerName').textContent = element.getAttribute('data-customer-name');
+            document.getElementById('modalProductName').textContent = element.getAttribute('data-product-name');
+            document.getElementById('modalPurchaseDate').textContent = element.getAttribute('data-purchase-date');
+            document.getElementById('modalQuantity').textContent = element.getAttribute('data-quantity');
+            document.getElementById('modalPrice').textContent = `¥${element.getAttribute('data-price')}`;
+            document.getElementById('modalTotalPrice').textContent = `¥${element.getAttribute('data-total-price')}`;
+            document.getElementById('modalFollowUpDate').textContent = element.getAttribute('data-follow-up-date') || '暂无';
+            
+            // 设置按钮的data-id属性
+            const recordId = element.getAttribute('data-record-id');
+            document.getElementById('editRecordButton').setAttribute('data-id', recordId);
+            document.getElementById('deleteRecordButton').setAttribute('data-id', recordId);
+            
+            // 显示模态框
+            modal.classList.add('active');
+        }
+        
+        // 过滤购买记录
+        function filterPurchaseRecords(searchTerm) {
+            const recordItems = document.querySelectorAll('#purchaseRecordsList .list-item');
+            
+            recordItems.forEach(item => {
+                const customerName = item.getAttribute('data-customer-name').toLowerCase();
+                const productName = item.getAttribute('data-product-name').toLowerCase();
+                
+                if (customerName.includes(searchTerm) || productName.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // 显示空状态
+            const visibleItems = document.querySelectorAll('#purchaseRecordsList .list-item[style=""]').length;
+            const emptyState = document.querySelector('#purchaseRecordsList .ios-empty-state');
+            
+            if (visibleItems === 0 && recordItems.length > 0) {
+                if (!emptyState) {
+                    const noResults = document.createElement('div');
+                    noResults.className = 'flex justify-center items-center py-10';
+                    noResults.innerHTML = `
+                        <div class="text-gray-400 text-center">
+                            <i class="fas fa-search text-2xl mb-2"></i>
+                            <div>未找到匹配的记录</div>
+                        </div>
+                    `;
+                    document.getElementById('purchaseRecordsList').appendChild(noResults);
+                }
+            } else if (emptyState && visibleItems > 0) {
+                emptyState.remove();
+            }
+        }
+        
+        // 计算统计数据
+        async function calculateStatistics() {
+            try {
+                const records = await api.get('/products');
+                
+                // 获取当前日期
+                const now = new Date();
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                
+                // 本月记录数
+                const monthlyRecords = records.filter(record => {
+                    const purchaseDate = new Date(record.purchaseDate);
+                    return purchaseDate >= firstDayOfMonth;
+                });
+                
+                document.getElementById('monthlyRecordsCount').textContent = monthlyRecords.length;
+                
+                // 本月销售额
+                let monthlySales = 0;
+                monthlyRecords.forEach(record => {
+                    monthlySales += record.price * record.quantity;
+                });
+                
+                document.getElementById('monthlySales').textContent = `¥${monthlySales.toFixed(2)}`;
+                
+                // 客户购买频率
+                const uniqueCustomers = new Set();
+                records.forEach(record => {
+                    if (record.customerId) {
+                        uniqueCustomers.add(record.customerId);
+                    }
+                });
+                
+                const monthsCount = 1; // 假设只看一个月的数据
+                const purchaseFrequency = uniqueCustomers.size > 0 ? 
+                    (records.length / uniqueCustomers.size / monthsCount).toFixed(1) : 0;
+                
+                document.getElementById('purchaseFrequency').textContent = `${purchaseFrequency}次/月`;
+                
+                // 热门产品
+                const productCounts = {};
+                records.forEach(record => {
+                    if (record.productName) {
+                        productCounts[record.productName] = (productCounts[record.productName] || 0) + record.quantity;
+                    }
+                });
+                
+                let topProduct = { name: '-', count: 0 };
+                
+                for (const product in productCounts) {
+                    if (productCounts[product] > topProduct.count) {
+                        topProduct = { name: product, count: productCounts[product] };
+                    }
+                }
+                
+                document.getElementById('topProduct').textContent = topProduct.name;
+                
+            } catch (error) {
+                console.error('获取统计数据失败:', error);
+                document.getElementById('monthlyRecordsCount').textContent = '0';
+                document.getElementById('monthlySales').textContent = '¥0';
+                document.getElementById('purchaseFrequency').textContent = '0次/月';
+                document.getElementById('topProduct').textContent = '-';
+            }
+        }
+
+        // 删除购买记录
+        function deletePurchaseRecord(recordId) {
+            api.delete(`/products/${recordId}`)
+                .then(() => {
+                    showToast('删除成功');
+                    // 关闭模态框
+                    document.getElementById('purchaseRecordModal').classList.remove('active');
+                    // 重新加载记录和统计数据
+                    loadPurchaseRecords();
+                    calculateStatistics();
+                })
+                .catch(error => {
+                    console.error('删除记录失败:', error);
+                    showToast('删除记录失败', 'error');
+                });
+        }
+        
+        // 格式化日期为本地格式
+        function formatDateToLocale(dateString) {
+            if (!dateString) return '未知日期';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

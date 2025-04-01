@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑购买记录 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+        /* 增强购买详情模态窗口的样式 */
+        .purchase-detail-container {
+            padding: 10px;
+        }
+
+        .purchase-detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .purchase-detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+            width: 100px;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            color: #333;
+            text-align: right;
+            flex: 1;
+        }
+
+        /* 深色模式样式 */
+        :root[data-theme="dark"] .detail-label {
+            color: #b0b0b0;
+        }
+
+        :root[data-theme="dark"] .detail-value {
+            color: #e0e0e0;
+        }
+
+        :root[data-theme="dark"] .purchase-detail-item {
+            border-bottom-color: #333;
+        }
+
+        :root[data-theme="dark"] .ios-modal-container {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+
+        :root[data-theme="dark"] .ios-modal-header {
+            border-bottom-color: #333;
+        }
+
+        :root[data-theme="dark"] .ios-modal-footer {
+            border-top-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="product-management.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>编辑购买记录</div>
+            <div class="title-bar-right"></div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <form id="productForm" class="ios-card">
+                <div class="card-body">
+                    <!-- 客户信息 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">客户 <span class="text-red-500">*</span></label>
+                        <select id="customerId" class="ios-form-input" required>
+                            <option value="">-- 请选择客户 --</option>
+                            <!-- 客户列表将通过JavaScript动态填充 -->
+                        </select>
+                    </div>
+                    
+                    <!-- 产品信息 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">产品名称 <span class="text-red-500">*</span></label>
+                        <select id="productName" class="ios-form-input" required>
+                            <option value="">-- 请选择产品 --</option>
+                            <!-- 产品列表将通过JavaScript动态填充 -->
+                        </select>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span>选择预设产品或输入自定义产品名称</span>
+                        </div>
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">数量</label>
+                        <input type="number" id="quantity" class="ios-form-input" min="1" value="1">
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">价格（单个价格）</label>
+                        <div class="flex items-center">
+                            <span class="mr-2">¥</span>
+                            <input type="number" id="price" class="ios-form-input" step="0.01" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">购买日期</label>
+                        <input type="date" id="purchaseDate" class="ios-form-input">
+                    </div>
+                    
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">产品回访日期</label>
+                        <input type="date" id="followUpDate" class="ios-form-input">
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span>默认为购买日期后90天</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="ios-button-primary mt-4">保存修改</button>
+                    <button type="button" id="cancelButton" class="ios-button-secondary mt-3">取消</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const recordId = urlParams.get('id');
+            
+            if (!recordId) {
+                showToast('未指定记录ID，请返回重试', 'error');
+                window.location.href = 'product-management.html';
+                return;
+            }
+            
+            // 先加载客户列表填充下拉选择框，然后再加载记录详情
+            loadCustomers().then(() => {
+                // 加载预设产品列表
+                return loadPresetProducts();
+            }).then(() => {
+                // 客户列表和预设产品加载完成后再加载产品详情
+                loadRecordDetails(recordId);
+                
+                // 如果URL中包含id参数，则将客户选择框设置为禁用状态
+                const customerSelect = document.getElementById('customerId');
+                customerSelect.disabled = true; // 设置为禁用状态
+                // 添加一个提示信息
+                const customerFormGroup = customerSelect.closest('.ios-form-group');
+                const helpText = document.createElement('div');
+                helpText.className = 'text-sm text-gray-500 mt-1';
+                helpText.textContent = '编辑模式下客户信息不可更改';
+                customerFormGroup.appendChild(helpText);
+            }).catch(error => {
+                console.error('初始化失败:', error);
+            });
+            
+            // 监听产品选择变化，自动填充价格
+            document.getElementById('productName').addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const productPrice = selectedOption.getAttribute('data-price');
+                if (productPrice) {
+                    document.getElementById('price').value = productPrice;
+                }
+            });
+            
+            // 监听购买日期变化，自动更新回访日期
+            document.getElementById('purchaseDate').addEventListener('change', function() {
+                const purchaseDate = this.value;
+                if (purchaseDate) {
+                    document.getElementById('followUpDate').value = calculateFollowUpDate(purchaseDate);
+                }
+            });
+            
+            // 取消按钮
+            document.getElementById('cancelButton').addEventListener('click', function() {
+                window.location.href = 'product-management.html';
+            });
+            
+            // 表单提交处理
+            document.getElementById('productForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const customerId = document.getElementById('customerId').value;
+                if (!customerId) {
+                    showToast('请选择客户', 'error');
+                    return;
+                }
+                
+                const productNameSelect = document.getElementById('productName');
+                const productName = productNameSelect.value;
+                
+                if (!productName) {
+                    showToast('请选择或输入产品名称', 'error');
+                    return;
+                }
+                
+                const productData = {
+                    customerId: customerId,
+                    productName: productName,
+                    quantity: document.getElementById('quantity').value,
+                    price: document.getElementById('price').value,
+                    purchaseDate: document.getElementById('purchaseDate').value,
+                    followUpDate: document.getElementById('followUpDate').value
+                };
+                
+                updateRecord(recordId, productData);
+            });
+        });
+        
+        // 加载客户列表
+        function loadCustomers() {
+            return new Promise((resolve, reject) => {
+                api.get('/customers')
+                    .then(customers => {
+                        const customerSelect = document.getElementById('customerId');
+                        
+                        // 按名称排序
+                        customers.sort((a, b) => {
+                            if (a.name && b.name) {
+                                return a.name.localeCompare(b.name);
+                            }
+                            return 0;
+                        });
+                        
+                        customers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.id;
+                            option.textContent = customer.name || `客户 #${customer.id}`;
+                            customerSelect.appendChild(option);
+                        });
+                        
+                        resolve(); // 客户列表加载完成
+                    })
+                    .catch(error => {
+                        console.error('获取客户列表失败:', error);
+                        showToast('获取客户列表失败，请刷新页面重试', 'error');
+                        reject(error);
+                    });
+            });
+        }
+        
+        // 加载预设产品列表
+        function loadPresetProducts() {
+            return new Promise((resolve, reject) => {
+                api.get('/preset-products')
+                    .then(products => {
+                        const productSelect = document.getElementById('productName');
+                        
+                        // 按显示顺序排序
+                        products.sort((a, b) => a.displayOrder - b.displayOrder);
+                        
+                        products.forEach(product => {
+                            const option = document.createElement('option');
+                            option.value = product.productName;
+                            option.textContent = product.productName;
+                            option.setAttribute('data-price', product.price);
+                            if (product.description) {
+                                option.setAttribute('title', product.description);
+                            }
+                            productSelect.appendChild(option);
+                        });
+                        
+                        // 添加自定义选项
+                        const customOption = document.createElement('option');
+                        customOption.value = "custom";
+                        customOption.textContent = "-- 自定义产品 --";
+                        productSelect.appendChild(customOption);
+                        
+                        // 监听自定义选项的选择
+                        productSelect.addEventListener('change', function() {
+                            if (this.value === 'custom') {
+                                // 如果选择了自定义，则将下拉框替换为输入框
+                                const parent = this.parentElement;
+                                
+                                // 创建输入框
+                                const input = document.createElement('input');
+                                input.type = 'text';
+                                input.id = 'productName';
+                                input.className = 'ios-form-input';
+                                input.required = true;
+                                input.placeholder = '请输入产品名称';
+                                
+                                // 替换下拉框
+                                parent.replaceChild(input, this);
+                                
+                                // 清空价格
+                                document.getElementById('price').value = '';
+                                
+                                // 聚焦到输入框
+                                input.focus();
+                            }
+                        });
+                        
+                        resolve(); // 预设产品列表加载完成
+                    })
+                    .catch(error => {
+                        console.error('获取预设产品列表失败:', error);
+                        showToast('获取预设产品列表失败，请刷新页面重试', 'error');
+                        reject(error);
+                    });
+            });
+        }
+        
+        // 加载记录详情
+        function loadRecordDetails(id) {
+            api.get(`/products/${id}`)
+                .then(product => {
+                    if (!product) {
+                        showToast('未找到记录', 'error');
+                        return;
+                    }
+                    
+                    // 将客户ID设置为只读
+                    document.getElementById('customerId').value = product.customerId;
+                    
+                    // 填充其他字段
+                    document.getElementById('productName').value = product.productName;
+                    document.getElementById('quantity').value = product.quantity || '';
+                    document.getElementById('price').value = product.price || '';
+                    
+                    // 设置日期
+                    if (product.purchaseDate) {
+                        document.getElementById('purchaseDate').value = product.purchaseDate;
+                    }
+                    
+                    // 设置回访日期
+                    if (product.followUpDate) {
+                        document.getElementById('followUpDate').value = product.followUpDate;
+                    } else if (product.purchaseDate) {
+                        // 如果没有回访日期但有购买日期，自动计算
+                        document.getElementById('followUpDate').value = calculateFollowUpDate(product.purchaseDate);
+                    }
+                })
+                .catch(error => {
+                    console.error('获取记录详情失败:', error);
+                    showToast('获取记录详情失败，请返回重试', 'error');
+                });
+        }
+        
+        // 更新记录
+        function updateRecord(id, data) {
+            api.put(`/products/${id}`, data)
+                .then(response => {
+                    showToast('记录更新成功', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'product-management.html';
+                        }, 1500);
+                })
+                .catch(error => {
+                    console.error('更新记录失败:', error);
+                    showToast('更新失败: ' + (error.message || '未知错误'), 'error');
+                });
+        }
+        
+        // 计算回访日期（购买日期+90天）
+        function calculateFollowUpDate(purchaseDateStr) {
+            if (!purchaseDateStr) return '';
+            
+            try {
+                const purchaseDate = new Date(purchaseDateStr);
+                const followUpDate = new Date(purchaseDate);
+                followUpDate.setDate(followUpDate.getDate() + 90);
+                return followUpDate.toISOString().split('T')[0];
+            } catch (error) {
+                console.error('计算回访日期时出错:', error);
+                return '';
+            }
+        }
+    </script>
+</body>
+</html> 

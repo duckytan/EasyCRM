@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加回访记录 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="visit-records.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>添加回访记录</div>
+            <div class="title-bar-right"></div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <form id="visitForm" class="ios-card">
+                <div class="card-body">
+                    <!-- 客户选择 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">选择客户</label>
+                        <select id="customerId" class="ios-form-input">
+                            <option value="">-- 请选择客户 --</option>
+                            <!-- 客户列表将由JavaScript动态填充 -->
+                        </select>
+                    </div>
+                    
+                    <!-- 回访时间 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">回访时间</label>
+                        <input type="datetime-local" id="visitTime" class="ios-form-input">
+                    </div>
+                    
+                    <!-- 回访内容 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">回访内容</label>
+                        <textarea id="content" class="ios-form-input" rows="3"></textarea>
+                    </div>
+                    
+                    <!-- 回访效果 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">回访效果</label>
+                        <select id="effect" class="ios-form-input">
+                            <option value="">-- 请选择回访效果 --</option>
+                            <option value="非常满意">非常满意</option>
+                            <option value="满意">满意</option>
+                            <option value="良好">良好</option>
+                            <option value="一般">一般</option>
+                            <option value="不满意">不满意</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 满意调查 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">满意调查</label>
+                        <textarea id="satisfaction" class="ios-form-input" rows="2"></textarea>
+                    </div>
+                    
+                    <!-- 客户意向 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">客户意向</label>
+                        <select id="intention" class="ios-form-input">
+                            <option value="">-- 请选择客户意向 --</option>
+                            <option value="H">H - 很高</option>
+                            <option value="A">A - 高</option>
+                            <option value="B">B - 中</option>
+                            <option value="C">C - 低</option>
+                            <option value="D">D - 很低</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 后续跟进 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">后续跟进</label>
+                        <textarea id="followUp" class="ios-form-input" rows="2"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="ios-button-primary mt-4">保存回访记录</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取URL参数中的客户ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectedCustomerId = urlParams.get('customerId');
+            
+            // 设置当前时间为默认回访时间
+            setDefaultVisitTime();
+            
+            // 获取客户列表
+            fetch('/api/customers')
+                .then(response => response.json())
+                .then(customers => {
+                    const selectElement = document.getElementById('customerId');
+                    customers.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer.id;
+                        option.textContent = customer.name;
+                        
+                        // 如果URL中有预选的客户ID，则选中对应的选项
+                        if (preselectedCustomerId && customer.id == preselectedCustomerId) {
+                            option.selected = true;
+                        }
+                        
+                        selectElement.appendChild(option);
+                    });
+                    
+                    // 如果URL中包含customerId参数，则将客户选择框设置为禁用状态
+                    if (preselectedCustomerId) {
+                        selectElement.disabled = true; // 设置为禁用状态
+                        // 添加一个提示信息
+                        const customerFormGroup = selectElement.closest('.ios-form-group');
+                        const helpText = document.createElement('div');
+                        helpText.className = 'text-xs text-gray-500 mt-1';
+                        helpText.textContent = '从客户页添加时不可更改客户';
+                        customerFormGroup.appendChild(helpText);
+                    }
+                })
+                .catch(error => console.error('获取客户列表失败:', error));
+            
+            // 设置当前时间为默认回访时间
+            function setDefaultVisitTime() {
+                const now = new Date();
+                
+                // 格式化时间为datetime-local输入框所需格式: YYYY-MM-DDThh:mm
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                
+                const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                
+                // 设置为默认值
+                document.getElementById('visitTime').value = formattedDateTime;
+            }
+            
+            // 表单提交处理
+            document.getElementById('visitForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const visitData = {
+                    customerId: document.getElementById('customerId').value,
+                    visitTime: document.getElementById('visitTime').value,
+                    content: document.getElementById('content').value,
+                    effect: document.getElementById('effect').value,
+                    satisfaction: document.getElementById('satisfaction').value,
+                    intention: document.getElementById('intention').value,
+                    followUp: document.getElementById('followUp').value
+                };
+                
+                fetch('/api/visits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(visitData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('回访记录保存成功!');
+                    
+                    // 如果是从客户详情页来的，返回客户详情页
+                    if (preselectedCustomerId) {
+                        window.location.href = `customer-detail.html?id=${preselectedCustomerId}`;
+                    } else {
+                        window.location.href = 'visit-records.html';
+                    }
+                })
+                .catch(error => {
+                    console.error('保存回访记录失败:', error);
+                    alert('保存失败，请重试');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

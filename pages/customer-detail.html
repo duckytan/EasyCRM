@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户详情 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../css/common.css">
+    <script type="module">
+        import { createAvatar } from '../js/components/avatar.js';
+        window.createAvatar = createAvatar; // 使其在全局可用
+    </script>
+    <style>
+        /* 联系按钮的样式 */
+        .contact-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px; /* 增加圆角半径，使按钮更圆润 */
+            background-color: #3b82f6; /* 深蓝色 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 0 3px;
+            color: #ffffff; /* 纯白色图标 */
+        }
+        
+        .contact-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: #2563eb; /* 悬停时深一点的蓝色 */
+        }
+        
+        .contact-btn:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background-color: #1d4ed8; /* 点击时更深的蓝色 */
+        }
+        
+        .contact-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+            background-color: #9ca3af; /* 禁用时灰色 */
+        }
+        
+        /* 确保Font Awesome图标正确显示 */
+        .contact-btn .fab, 
+        .contact-btn .fas {
+            color: #ffffff !important; /* 确保按钮内的图标为白色 */
+            display: inline-block;
+            width: auto;
+            height: auto;
+            line-height: 1;
+            vertical-align: middle;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+        
+        /* 特别针对fas图标的样式，确保与fab图标统一 */
+        .contact-btn .fas {
+            font-weight: 900 !important; /* fas图标默认是900字重，确保它能正确显示 */
+            font-size: 18px !important; /* 稍微调整大小与品牌图标匹配 */
+        }
+        
+        /* 针对特定品牌图标的样式重置 */
+        .contact-btn .fa-weixin, 
+        .contact-btn .fa-whatsapp, 
+        .contact-btn .fa-facebook-f, 
+        .contact-btn .fa-wechat,
+        .contact-btn .fa-phone,
+        .contact-btn .fa-phone-alt {
+            color: #ffffff !important; /* 强制白色 */
+            font-weight: 400;
+            position: static;
+            transform: none;
+            width: 1em;
+            height: 1em;
+            text-align: center;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent !important;
+            box-shadow: none !important; 
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* 特别针对电话图标的增强样式 */
+        #phoneBtn .fas.fa-phone {
+            color: #ffffff !important;
+            font-size: 18px !important; /* 稍微增大图标 */
+            text-shadow: 0 0 1px rgba(255,255,255,0.5); /* 添加轻微文本阴影增强可见性 */
+        }
+        
+        /* 按钮组容器 */
+        .contact-btn-group {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 10px;
+            padding: 5px 0;
+        }
+        
+        /* 针对特定按钮的自定义样式 - 统一为深蓝色和白色图标 */
+        #phoneBtn {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        
+        #wechatBtn {
+            background-color: #3b82f6;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+        
+        /* 确保微信图标没有额外的样式影响 */
+        #wechatBtn .fab.fa-weixin {
+            background-color: transparent;
+            box-shadow: none;
+            border-radius: 0;
+            color: #ffffff !important;
+        }
+        
+        #whatsappBtn {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        
+        #facebookBtn {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        
+        /* 禁用状态统一样式 */
+        .contact-btn:disabled {
+            background-color: #9ca3af !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="customer-list.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>客户详情</div>
+            <div class="title-bar-right">
+                <a href="#" id="editCustomerBtn">
+                    <i class="fas fa-edit"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content">
+            <div id="customerDetailContainer">
+                <!-- 客户详情将由JavaScript动态填充 -->
+                <div class="flex justify-center items-center py-10">
+                    <div class="text-gray-400">
+                        <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                        <div>加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 操作按钮区域 -->
+        <div class="bottom-action-buttons">
+            <div class="flex justify-between">
+                <a href="#" id="addPurchaseBtn" class="flex-1 ios-button-compact mr-2">
+                    <i class="fas fa-shopping-bag mr-1"></i> 购买
+                </a>
+                <a href="#" id="createVisitBtn" class="flex-1 ios-button-compact-green">
+                    <i class="fas fa-calendar-check mr-1"></i> 回访
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入Polyfill脚本 -->
+    <script src="../js/storage-polyfill.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        // 将地区代码转换为中文名称
+        function getRegionName(regionCode) {
+            // 优先使用全局方法
+            if (window.app && app.presetData && typeof app.presetData.getRegionName === 'function') {
+                return app.presetData.getRegionName(regionCode);
+            }
+            
+            // 如果全局方法不可用，返回原始值
+            return regionCode || '未填写';
+        }
+        
+        // 通过客户ID获取地址并导航 - 移至全局作用域
+        function navigateToAddress(customerId) {
+            // 从localStorage获取当前客户信息
+            const customer = JSON.parse(localStorage.getItem('currentCustomer'));
+            if (customer && customer.address) {
+                // 使用默认导航模式（排在第一位的导航工具）导航到地址
+                navigateWithDefaultMode(customer.address);
+            } else {
+                console.error('找不到客户地址信息');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // 获取URL参数中的客户ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const customerId = urlParams.get('id');
+            
+            if (!customerId) {
+                showError('缺少客户ID参数');
+                return;
+            }
+            
+            // 检查预设数据是否已加载
+            if (window.app && app.presetData && app.presetData.loaded) {
+                console.log('使用已加载的预设数据');
+                fetchCustomerDetail(customerId);
+            } else {
+                console.log('等待预设数据加载...');
+                // 监听预设数据加载完成事件
+                document.addEventListener('presetDataLoaded', function(event) {
+                    console.log('预设数据加载事件触发:', event.detail);
+                    fetchCustomerDetail(customerId);
+                }, { once: true });
+                
+                // 设置超时，如果预设数据加载事件未触发，也继续获取客户详情
+                setTimeout(function() {
+                    if (!window.app || !app.presetData || !app.presetData.loaded) {
+                        console.warn('预设数据加载超时，继续获取客户详情');
+                        fetchCustomerDetail(customerId);
+                    }
+                }, 2000);
+            }
+            
+            // 获取客户详情
+            function fetchCustomerDetail(customerId) {
+                api.get(`/customers/${customerId}`)
+                    .then(customer => {
+                        displayCustomerDetail(customer);
+                    })
+                    .catch(error => {
+                        console.error('获取客户详情失败:', error);
+                        showError('获取客户详情失败，可能客户不存在或已被删除');
+                    });
+            }
+            
+            function displayCustomerDetail(customer) {
+                // 获取意向标签的CSS类
+                let intentionClass = 'intention-d';
+                if (customer.intention === 'H') intentionClass = 'intention-h';
+                else if (customer.intention === 'A') intentionClass = 'intention-a';
+                else if (customer.intention === 'B') intentionClass = 'intention-b';
+                else if (customer.intention === 'C') intentionClass = 'intention-c';
+                
+                // 计算注册天数
+                const registerDate = customer.registration_date ? new Date(customer.registration_date) : null;
+                const today = new Date();
+                const daysSinceRegister = registerDate ? Math.floor((today - registerDate) / (1000 * 60 * 60 * 24)) : '未知';
+                
+                // 计算星座
+                const zodiacSign = getZodiacSign(customer.birthday);
+                
+                // 保存客户数据供其他函数使用
+                localStorage.setItem('currentCustomer', JSON.stringify(customer));
+                
+                const html = `
+                    <!-- 客户基本信息卡片 -->
+                    <div class="ios-card mb-4">
+                        <div class="card-body">
+                            <div class="flex items-center mb-4">
+                                <div class="mr-4" id="customerAvatar">
+                                    <!-- 头像将由JavaScript动态插入 -->
+                                </div>
+                                <div>
+                                    <div class="flex items-center">
+                                        <h2 class="text-xl font-bold">${customer.name}</h2>
+                                        <span class="${intentionClass} ml-2">${customer.intention || '无意向'}</span>
+                                    </div>
+                                    <div class="text-gray-500 mt-1">${customer.category || '普通客户'}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mr-2">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">电话</div>
+                                        <div>${customer.phone || '未填写'}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-500 mr-2">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">地区</div>
+                                        <div>${getRegionName(customer.region)}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-pink-500 mr-2">
+                                        <i class="fas fa-birthday-cake"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">出生日期</div>
+                                        <div>${customer.birthday || '未填写'}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-500 mr-2">
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">星座</div>
+                                        <div>${zodiacSign || '未知'}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 mr-2">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">注册日期</div>
+                                        <div>${customer.registration_date || '未填写'}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500 mr-2">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">已注册</div>
+                                        <div>${daysSinceRegister} 天</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-500 mr-2">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">购买次数</div>
+                                        <div id="purchase-stats">
+                                            ${globalCustomerStats.purchaseCount || 0} 次
+                                            <span class="text-xs text-blue-500 ml-1">累计${globalCustomerStats.totalAmountFormatted || '0元'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mr-2">
+                                        <i class="fas fa-phone-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs text-gray-500">回访次数</div>
+                                        <div id="visit-stats">
+                                            ${globalCustomerStats.visitCount || 0} 次
+                                            <span class="text-xs text-blue-500 ml-1">平均 ${globalCustomerStats.avgMonthsPerVisit || '0'}月/次</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 客户详细信息卡片 -->
+                    <div class="ios-card mb-4">
+                        <div class="card-header">基本信息</div>
+                        <div class="card-body">
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">性别</div>
+                                    <div>${customer.gender || '未填写'}</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">年龄</div>
+                                    <div>${customer.age || '未填写'}</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">快速联系</div>
+                                    <div class="contact-btn-group">
+                                        <button id="phoneBtn" class="contact-btn ${customer.phone ? '' : 'text-gray-400 opacity-50'}" 
+                                            ${customer.phone ? `onclick="window.location.href='tel:${customer.phone}'"` : 'disabled'}>
+                                            <i class="fas fa-phone"></i>
+                                        </button>
+                                        <button id="wechatBtn" class="contact-btn ${customer.wechat ? '' : 'text-gray-400 opacity-50'}" 
+                                            ${customer.wechat ? '' : 'disabled'}>
+                                            <i class="fab fa-weixin"></i>
+                                        </button>
+                                        <button id="whatsappBtn" class="contact-btn ${customer.whatsapp ? '' : 'text-gray-400 opacity-50'}" 
+                                            ${customer.whatsapp ? `onclick="window.open('https://wa.me/${customer.whatsapp}', '_blank')"` : 'disabled'}>
+                                            <i class="fab fa-whatsapp"></i>
+                                        </button>
+                                        <button id="facebookBtn" class="contact-btn ${customer.facebook ? '' : 'text-gray-400 opacity-50'}" 
+                                            ${customer.facebook ? `onclick="window.open('https://www.facebook.com/${customer.facebook}', '_blank')"` : 'disabled'}>
+                                            <i class="fab fa-facebook-f"></i>
+                                        </button>
+                                        <button id="emailBtn" class="contact-btn ${customer.email ? '' : 'text-gray-400 opacity-50'}" 
+                                            ${customer.email ? `onclick="window.open('mailto:${customer.email}', '_blank')"` : 'disabled'}>
+                                            <i class="fas fa-envelope"></i>
+                                        </button>
+                                        <button id="mapBtn" class="contact-btn ${customer.address ? '' : 'text-gray-400 opacity-50'}" 
+                                            ${customer.address ? `onclick="navigateToAddress(${customer.id})"` : 'disabled'}>
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 其他信息卡片 -->
+                    <div class="ios-card mb-4" id="otherInfoCard">
+                        <div class="card-header">其他信息</div>
+                        <div class="card-body">
+                            <div class="grid grid-cols-1 gap-4">
+                                ${customer.demand ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">客户需求</div>
+                                    <div>${customer.demand}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.address ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">详细地址</div>
+                                    <div>${customer.address}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.budget || customer.budgetName ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">预算范围</div>
+                                    <div>${getBudgetName(customer.budget) || customer.budgetName}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.planned_visit_date ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">计划回访时间</div>
+                                    <div>${formatDateToLocale(customer.planned_visit_date)}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.planned_visit_method ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">计划回访方式</div>
+                                    <div>${getVisitMethodName(customer.planned_visit_method)}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.planned_visit_content ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">计划回访内容</div>
+                                    <div>${customer.planned_visit_content}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.superiorContactName ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">上级联系人</div>
+                                    <div>${customer.superiorContactName}</div>
+                                </div>
+                                ` : ''}
+                                
+                                ${customer.remarks || customer.remark ? `
+                                <div>
+                                    <div class="text-sm text-gray-500 mb-1">备注信息</div>
+                                    <div>${customer.remarks || customer.remark}</div>
+                                </div>
+                                ` : ''}
+                                
+                                <!-- 如果没有任何其他信息，显示提示 -->
+                                ${(!customer.demand && !customer.address && !customer.budget && !customer.budgetName && 
+                                  !customer.planned_visit_date && !customer.planned_visit_method && !customer.planned_visit_content && 
+                                  !customer.superiorContactName && !customer.remarks && !customer.remark) ? `
+                                <div class="text-center text-gray-500 py-2">暂无其他信息</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 购买记录卡片 -->
+                    <div class="ios-card mb-4" id="purchaseRecordsCard">
+                        <div class="card-header flex justify-between items-center">
+                            <div>购买记录</div>
+                            <a href="product-add.html?customerId=${customer.id}" class="text-blue-500 text-sm">
+                                <i class="fas fa-plus"></i> 添加购买
+                            </a>
+                        </div>
+                        <div class="card-body p-0" id="purchaseRecordsContainer">
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <div>加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 回访记录卡片 -->
+                    <div class="ios-card mb-8" id="visitRecordsCard">
+                        <div class="card-header flex justify-between items-center">
+                            <div>回访记录</div>
+                            <a href="visit-add.html?customerId=${customer.id}" class="text-blue-500 text-sm">
+                                <i class="fas fa-plus"></i> 添加回访
+                            </a>
+                        </div>
+                        <div class="card-body p-0" id="visitRecordsContainer">
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <div>加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 底部空白区域，避免内容被底部导航栏遮挡 -->
+                    <div class="pb-24"></div>
+                `;
+                
+                document.getElementById('customerDetailContainer').innerHTML = html;
+                
+                // 创建并插入客户头像
+                const avatarContainer = document.getElementById('customerAvatar');
+                if (avatarContainer) {
+                    const avatar = createAvatar(customer.name, customer.gender, 'lg');
+                    avatarContainer.appendChild(avatar);
+                }
+                
+                // 获取客户的回访记录
+                fetchCustomerVisits(customer.id);
+                
+                // 获取客户的购买记录
+                fetchCustomerPurchases(customer.id);
+            }
+            
+            function fetchCustomerVisits(customerId) {
+                fetch(`/api/visits?customerId=${customerId}`)
+                    .then(response => response.json())
+                    .then(visits => {
+                        // 更新全局统计数据
+                        globalCustomerStats.visitCount = visits ? visits.length : 0;
+                        
+                        // 计算每次回访的平均月间隔
+                        const customer = JSON.parse(localStorage.getItem('currentCustomer'));
+                        if (customer && customer.registration_date) {
+                            globalCustomerStats.avgMonthsPerVisit = calculateAvgMonthsPerVisit(
+                                globalCustomerStats.visitCount, 
+                                customer.registration_date
+                            );
+                        }
+                        
+                        // 更新统计显示
+                        updateStatsDisplay();
+                        
+                        // 显示回访记录
+                        displayVisitRecords(visits);
+                    })
+                    .catch(error => {
+                        console.error('获取回访记录失败:', error);
+                        document.getElementById('visitRecordsContainer').innerHTML = `
+                            <div class="p-4 text-center text-gray-500">
+                                <i class="fas fa-exclamation-circle mb-2"></i>
+                                <div>获取回访记录失败</div>
+                            </div>
+                        `;
+                    });
+            }
+            
+            function displayVisitRecords(visits) {
+                const container = document.getElementById('visitRecordsContainer');
+                
+                if (!visits || visits.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-4 text-center text-gray-500">
+                            <i class="fas fa-calendar-times mb-2"></i>
+                            <div>暂无回访记录</div>
+                            <!-- 为空列表添加额外空白 -->
+                            <div class="h-8"></div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                visits.forEach(visit => {
+                    // 格式化日期时间
+                    const visitDate = new Date(visit.visitTime);
+                    const formattedDate = visitDate.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    html += `
+                        <div class="border-b p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="font-medium">${formattedDate}</div>
+                                <span class="intention-${visit.intention.toLowerCase() || 'd'} text-xs">${visit.intention || '无'}</span>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">
+                                <div class="font-medium mb-1">回访内容</div>
+                                <p>${visit.content}</p>
+                            </div>
+                            <div class="text-sm text-gray-700 mb-2">
+                                <div class="font-medium mb-1">回访效果</div>
+                                <p>${visit.effect}</p>
+                            </div>
+                            <div class="text-sm text-gray-700">
+                                <div class="font-medium mb-1">后续跟进</div>
+                                <p>${visit.followUp}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // 在最后一条记录后添加额外底部空白
+                html += `<div class="p-4"></div>`;
+                
+                container.innerHTML = html;
+            }
+            
+            function fetchCustomerPurchases(customerId) {
+                api.get(`/products?customerId=${customerId}`)
+                    .then(purchases => {
+                        // 更新全局统计数据
+                        globalCustomerStats.purchaseCount = purchases ? purchases.length : 0;
+                        
+                        // 计算总金额
+                        globalCustomerStats.totalAmount = 0;
+                        if (purchases && purchases.length > 0) {
+                            purchases.forEach(purchase => {
+                                const amount = (purchase.price || 0) * (purchase.quantity || 1);
+                                globalCustomerStats.totalAmount += amount;
+                            });
+                        }
+                        
+                        // 格式化总金额
+                        globalCustomerStats.totalAmountFormatted = formatStatAmount(globalCustomerStats.totalAmount);
+                        
+                        // 更新统计显示
+                        updateStatsDisplay();
+                        
+                        // 显示购买记录
+                        displayPurchaseRecords(purchases);
+                    })
+                    .catch(error => {
+                        console.error('获取购买记录失败:', error);
+                        document.getElementById('purchaseRecordsContainer').innerHTML = `
+                            <div class="p-4 text-center text-gray-500">
+                                <i class="fas fa-exclamation-circle mb-2"></i>
+                                <div>获取购买记录失败</div>
+                            </div>
+                        `;
+                    });
+            }
+            
+            function displayPurchaseRecords(purchases) {
+                const container = document.getElementById('purchaseRecordsContainer');
+                
+                if (!purchases || purchases.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-4 text-center text-gray-500">
+                            <i class="fas fa-shopping-cart mb-2"></i>
+                            <div>暂无购买记录</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 按购买日期排序，最新的在前面
+                purchases.sort((a, b) => new Date(b.purchaseDate) - new Date(a.purchaseDate));
+                
+                let html = '';
+                
+                purchases.forEach(purchase => {
+                    // 格式化日期
+                    const purchaseDate = new Date(purchase.purchaseDate);
+                    const formattedDate = formatDate(purchase.purchaseDate);
+                    
+                    // 计算总价
+                    const amount = (purchase.price || 0) * (purchase.quantity || 1);
+                    
+                    html += `
+                        <div class="ios-list-item border-b">
+                            <div class="list-item-content">
+                                <div class="list-item-title font-semibold">${purchase.productName}</div>
+                                <div class="flex items-center mt-1">
+                                    <span class="purchase-date mr-2"><i class="far fa-calendar-alt mr-1"></i>${formattedDate}</span>
+                                    <span class="purchase-quantity"><i class="fas fa-times-circle mr-1"></i>${purchase.quantity || 1}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="purchase-price-large">¥${formatNumber(amount)}</span>
+                                <a href="javascript:void(0)" onclick="showPurchaseDetails(${JSON.stringify(purchase).replace(/"/g, '&quot;')})" class="detail-link mt-1">
+                                    <i class="fas fa-angle-right"></i> 查看详情
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            }
+            
+            // 更新统计显示
+            function updateStatsDisplay() {
+                // 更新购买统计
+                const purchaseStatsElement = document.getElementById('purchase-stats');
+                if (purchaseStatsElement) {
+                    purchaseStatsElement.innerHTML = `
+                        ${globalCustomerStats.purchaseCount || 0} 次
+                        <span class="text-xs text-blue-500 ml-1">累计${globalCustomerStats.totalAmountFormatted || '0元'}</span>
+                    `;
+                }
+                
+                // 更新回访统计
+                const visitStatsElement = document.getElementById('visit-stats');
+                if (visitStatsElement) {
+                    visitStatsElement.innerHTML = `
+                        ${globalCustomerStats.visitCount || 0} 次
+                        <span class="text-xs text-blue-500 ml-1">平均 ${globalCustomerStats.avgMonthsPerVisit || '0'}月/次</span>
+                    `;
+                }
+            }
+            
+            function showError(message) {
+                document.getElementById('customerDetailContainer').innerHTML = `
+                    <div class="ios-card">
+                        <div class="card-body p-10 text-center">
+                            <div class="text-red-500 mb-4">
+                                <i class="fas fa-exclamation-circle text-4xl"></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">出错了</h3>
+                            <p class="text-gray-500">${message}</p>
+                            <a href="customer-list.html" class="ios-button-primary mt-4">返回客户列表</a>
+                        </div>
+                    </div>
+                `;
+                
+                // 隐藏操作按钮
+                document.querySelector('.bottom-action-buttons').style.display = 'none';
+            }
+            
+            // 计算星座
+            function getZodiacSign(dateString) {
+                if (!dateString) return '';
+                
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return '';
+                
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                
+                if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return '白羊座';
+                if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return '金牛座';
+                if ((month === 5 && day >= 21) || (month === 6 && day <= 21)) return '双子座';
+                if ((month === 6 && day >= 22) || (month === 7 && day <= 22)) return '巨蟹座';
+                if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return '狮子座';
+                if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return '处女座';
+                if ((month === 9 && day >= 23) || (month === 10 && day <= 23)) return '天秤座';
+                if ((month === 10 && day >= 24) || (month === 11 && day <= 22)) return '天蝎座';
+                if ((month === 11 && day >= 23) || (month === 12 && day <= 21)) return '射手座';
+                if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return '摩羯座';
+                if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return '水瓶座';
+                if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) return '双鱼座';
+                
+                return '';
+            }
+            
+             
+            // 将预算编码转换为名称
+            function getBudgetName(budgetCode) {
+                // 优先使用全局方法
+                if (window.app && app.presetData && typeof app.presetData.getBudgetName === 'function') {
+                    return app.presetData.getBudgetName(budgetCode);
+                }
+                
+                if (!budgetCode) return '未填写';
+                
+                // 首先尝试使用app.js中定义的全局预算映射
+                if (window.budgetCodeMap && window.budgetCodeMap[budgetCode]) {
+                    return window.budgetCodeMap[budgetCode];
+                }
+                
+                // 基本预算范围映射
+                const basicBudgets = {
+                    'budget-1': '5万以下',
+                    'budget-2': '5-20万',
+                    'budget-3': '20-50万',
+                    'budget-4': '50万以上'
+                };
+                
+                if (basicBudgets[budgetCode]) {
+                    return basicBudgets[budgetCode];
+                }
+                
+                // 如果在预设数据中找不到，返回原始代码
+                return budgetCode;
+            }
+            
+            // 获取回访方式名称
+            function getVisitMethodName(methodCode) {
+                // 优先使用全局方法
+                if (window.app && app.presetData && typeof app.presetData.getVisitMethodName === 'function') {
+                    return app.presetData.getVisitMethodName(methodCode);
+                }
+                
+                if (!methodCode) return '未填写';
+                
+                // 基本回访方式
+                const basicMethods = {
+                    '电话回访': '电话回访',
+                    '上门拜访': '上门拜访',
+                    '视频会议': '视频会议',
+                    '邮件沟通': '邮件沟通',
+                    '微信沟通': '微信沟通'
+                };
+                
+                if (basicMethods[methodCode]) {
+                    return basicMethods[methodCode];
+                }
+                
+                // 如果在预设数据中找不到，返回原始代码
+                return methodCode;
+            }
+            
+            // 计算每次回访的平均月间隔
+            function calculateAvgMonthsPerVisit(visitCount, registrationDate) {
+                if (!visitCount || !registrationDate) return '0';
+                
+                const regDate = new Date(registrationDate);
+                if (isNaN(regDate.getTime())) return '0';
+                
+                const today = new Date();
+                // 计算月份差，加1是因为包含当前月
+                const monthsDiff = (today.getFullYear() - regDate.getFullYear()) * 12 + (today.getMonth() - regDate.getMonth()) + 1;
+                
+                // 如果不足1个月，返回原始次数
+                if (monthsDiff < 1) return visitCount.toString();
+                
+                // 计算平均值并保留两位小数
+                const avgPerMonth = (visitCount / monthsDiff).toFixed(2);
+                // 去掉末尾的0
+                return avgPerMonth.replace(/\.?0+$/, '');
+            }
+            
+            // 设置事件监听器
+            document.getElementById('createVisitBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = `visit-add.html?customerId=${customerId}`;
+            });
+            
+            document.getElementById('addPurchaseBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = `product-add.html?customerId=${customerId}`;
+            });
+            
+            document.getElementById('editCustomerBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                // 假设customer-edit.html页面已存在
+                window.location.href = `customer-edit.html?id=${customerId}`;
+            });
+            
+            // 在页面上方添加这两个全局变量和函数
+            let globalCustomerStats = {
+                purchaseCount: 0,
+                totalAmount: 0,
+                totalAmountFormatted: '0元',
+                visitCount: 0,
+                avgVisitsPerMonth: '0',
+                avgMonthsPerVisit: '0'
+            };
+            
+            // 格式化金额显示函数
+            function formatStatAmount(amount) {
+                if (!amount) return '0元';
+                
+                // 1万元以下，以元为单位
+                if (amount < 10000) {
+                    return amount.toLocaleString('zh-CN') + '元';
+                }
+                
+                // 1万元以上，以万为单位，向下取整
+                const inWan = Math.floor(amount / 10000);
+                return inWan + '万元';
+            }
+
+            // 格式化日期函数
+            function formatDate(dateString) {
+                if (!dateString) return '未知日期';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                }).replace(/\//g, '-');
+            }
+
+            // 格式化数字函数
+            function formatNumber(num) {
+                if (isNaN(num)) return '0.00';
+                return parseFloat(num).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+
+            // 显示购买详情的模态窗口
+            function showPurchaseDetails(purchase) {
+                // 格式化日期和价格
+                const formattedDate = formatDate(purchase.purchaseDate);
+                const unitPrice = formatNumber(purchase.price || 0);
+                const quantity = purchase.quantity || 1;
+                const totalAmount = formatNumber((purchase.price || 0) * quantity);
+                
+                // 创建模态窗口HTML
+                const modalHtml = `
+                    <div class="ios-modal active" id="purchaseDetailModal">
+                        <div class="ios-modal-overlay" onclick="closePurchaseDetailModal()"></div>
+                        <div class="ios-modal-container">
+                            <div class="ios-modal-header">
+                                <h3 class="purchase-modal-title">购买详情</h3>
+                                <button class="ios-modal-close" onclick="closePurchaseDetailModal()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="ios-modal-body">
+                                <div class="purchase-detail-container">
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">商品名称</div>
+                                        <div class="detail-value">${purchase.productName || '未命名商品'}</div>
+                                    </div>
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">购买日期</div>
+                                        <div class="detail-value">${formattedDate}</div>
+                                    </div>
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">单价</div>
+                                        <div class="detail-value purchase-price">¥${unitPrice}</div>
+                                    </div>
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">数量</div>
+                                        <div class="detail-value">${quantity}</div>
+                                    </div>
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">总价</div>
+                                        <div class="detail-value purchase-price-large">¥${totalAmount}</div>
+                                    </div>
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">备注</div>
+                                        <div class="detail-value">${purchase.notes || '无备注'}</div>
+                                    </div>
+                                    ${purchase.productFollowup ? `
+                                    <div class="purchase-detail-item">
+                                        <div class="detail-label">产品回访</div>
+                                        <div class="detail-value">${formatDate(purchase.productFollowup)}</div>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <div class="ios-modal-footer">
+                                <button class="ios-button-secondary" onclick="closePurchaseDetailModal()">关闭</button>
+                                <a href="product-edit.html?id=${purchase.id}" class="ios-button-primary">编辑</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加模态窗口到页面
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+
+            // 关闭购买详情模态窗口
+            function closePurchaseDetailModal() {
+                const modal = document.getElementById('purchaseDetailModal');
+                if (modal) {
+                    modal.remove();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

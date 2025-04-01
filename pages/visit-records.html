@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回访记录 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <script type="module">
+        import { createAvatar } from '../js/components/avatar.js';
+        window.createAvatar = createAvatar; // 使其在全局可用
+    </script>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="dashboard.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>回访记录</div>
+            <div class="title-bar-right">
+                <a href="visit-add.html" id="addVisitBtn">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="main-content pb-20">
+            <!-- 回访列表 -->
+            <div class="ios-card mb-4">
+                <div class="card-header">
+                    <div class="flex justify-between items-center">
+                        <h2 class="card-title">回访记录列表</h2>
+                        <a href="visit-add.html" class="ios-button-small">
+                            <i class="fas fa-plus mr-1"></i> 添加记录
+                        </a>
+                    </div>
+                    <div class="ios-search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="搜索客户或回访内容...">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="visits-container">
+                        <div id="visitsContainer" class="visits-list">
+                    <!-- 回访记录项将由JavaScript动态填充 -->
+                    <div class="flex justify-center items-center py-10">
+                        <div class="text-gray-400">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <div>加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 回访统计 -->
+            <div class="ios-card mt-4">
+                <div class="card-header">
+                    <h2 class="card-title">回访统计</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="ios-stat-card">
+                            <div class="stat-title">本月回访次数</div>
+                            <div class="stat-value" id="monthlyVisitCount">0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">回访客户数量</div>
+                            <div class="stat-value" id="visitedCustomersCount">0</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">平均回访满意度</div>
+                            <div class="stat-value" id="avgSatisfaction">-</div>
+                        </div>
+                        <div class="ios-stat-card">
+                            <div class="stat-title">最常联系客户</div>
+                            <div class="stat-value" id="topVisitedCustomer">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <!-- 添加回访记录详情模态框 -->
+    <div id="visitRecordModal" class="ios-modal">
+        <div class="ios-modal-overlay"></div>
+        <div class="ios-modal-container">
+            <div class="ios-modal-header">
+                <h3>回访记录详情</h3>
+                <button class="ios-modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ios-modal-body">
+                <div class="visit-detail-container">
+                    <div class="visit-detail-item">
+                        <span class="detail-label">客户名称:</span>
+                        <span id="modalCustomerName" class="detail-value"></span>
+                    </div>
+                    <div class="visit-detail-item">
+                        <span class="detail-label">回访时间:</span>
+                        <span id="modalVisitTime" class="detail-value"></span>
+                    </div>
+                    <div class="visit-detail-item">
+                        <span class="detail-label">回访内容:</span>
+                        <span id="modalContent" class="detail-value"></span>
+                    </div>
+                    <div class="visit-detail-item">
+                        <span class="detail-label">回访效果:</span>
+                        <span id="modalEffect" class="detail-value"></span>
+                    </div>
+                    <div class="visit-detail-item">
+                        <span class="detail-label">客户满意度:</span>
+                        <span id="modalSatisfaction" class="detail-value"></span>
+                    </div>
+                    <div class="visit-detail-item">
+                        <span class="detail-label">客户意向:</span>
+                        <span id="modalIntention" class="detail-value"></span>
+                    </div>
+                    <div class="visit-detail-item">
+                        <span class="detail-label">后续跟进:</span>
+                        <span id="modalFollowUp" class="detail-value"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="ios-modal-footer">
+                <button id="editVisitButton" class="ios-button-secondary">
+                    <i class="fas fa-edit mr-1"></i> 编辑
+                </button>
+                <button id="deleteVisitButton" class="ios-button-danger">
+                    <i class="fas fa-trash-alt mr-1"></i> 删除
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从API获取回访记录数据
+            fetchVisits();
+            
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                filterVisits(searchTerm);
+            });
+            
+            // 声明全局变量存储回访记录
+            let allVisits = [];
+            
+            function fetchVisits() {
+                fetch('/api/visits')
+                    .then(response => response.json())
+                    .then(visits => {
+                        allVisits = visits; // 存储所有回访记录
+                        displayVisits(visits);
+                        calculateVisitStatistics(visits);
+                    })
+                    .catch(error => {
+                        console.error('获取回访记录失败:', error);
+                        document.getElementById('visitsContainer').innerHTML = `
+                            <div class="flex justify-center items-center py-10">
+                                <div class="text-red-500 text-center">
+                                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                                    <div>加载失败，请重试</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+            }
+            
+            function displayVisits(visits) {
+                const container = document.getElementById('visitsContainer');
+                
+                if (visits.length === 0) {
+                    container.innerHTML = `
+                        <div class="flex justify-center items-center py-10">
+                            <div class="text-gray-400 text-center">
+                                <i class="fas fa-calendar-times text-2xl mb-2"></i>
+                                <div>暂无回访记录</div>
+                                <a href="visit-add.html" class="text-blue-500 mt-2 inline-block">
+                                    <i class="fas fa-plus-circle mr-1"></i>添加回访记录
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                
+                visits.forEach(visit => {
+                    // 获取意向标签的CSS类
+                    let intentionClass = 'intention-d';
+                    if (visit.intention === 'H') intentionClass = 'intention-h';
+                    else if (visit.intention === 'A') intentionClass = 'intention-a';
+                    else if (visit.intention === 'B') intentionClass = 'intention-b';
+                    else if (visit.intention === 'C') intentionClass = 'intention-c';
+                    
+                    // 格式化日期时间
+                    const visitDate = new Date(visit.visitTime);
+                    const formattedDate = visitDate.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    html += `
+                        <div class="list-item border-b p-4" data-visit-id="${visit.id}" data-customer-id="${visit.customerId}" data-customer-name="${visit.customerName || '未知客户'}" data-visit-time="${formattedDate}" data-content="${visit.content || ''}" data-effect="${visit.effect || ''}" data-satisfaction="${visit.satisfaction || ''}" data-intention="${visit.intention || ''}" data-follow-up="${visit.followUp || ''}">
+                            <div class="flex items-center w-full">
+                                <div class="mr-3" id="avatar-visit-${visit.id}">
+                                    <!-- 头像将由JavaScript动态插入 -->
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <div class="font-medium">${visit.customerName || '未知客户'}</div>
+                                        <div class="text-sm text-gray-500">${formattedDate}</div>
+                                    </div>
+                                    <div class="text-sm text-gray-600 mb-1">回访内容：${visit.content}</div>
+                                    <div class="text-sm text-gray-600 mb-1">回访效果：${visit.effect}</div>
+                                    <div class="text-sm text-gray-600 mb-1">客户意向：<span class="${intentionClass}">${visit.intention}</span></div>
+                                    <div class="text-sm text-gray-600">后续跟进：${visit.followUp}</div>
+                                </div>
+                                <div class="list-item-arrow ml-2">
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+                // 为每个回访记录创建客户头像
+                visits.forEach(visit => {
+                    const avatarContainer = document.getElementById(`avatar-visit-${visit.id}`);
+                    if (avatarContainer) {
+                        const avatar = createAvatar(visit.customerName || '未知客户', visit.customerGender);
+                        avatarContainer.appendChild(avatar);
+                    }
+                });
+                
+                // 添加点击事件 - 打开详情模态框
+                container.querySelectorAll('.list-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        openVisitDetails(this);
+                    });
+                });
+            }
+            
+            // 过滤回访记录
+            function filterVisits(searchTerm) {
+                if (!searchTerm) {
+                    displayVisits(allVisits);
+                    return;
+                }
+                
+                const filteredVisits = allVisits.filter(visit => {
+                    const customerName = (visit.customerName || '').toLowerCase();
+                    const content = (visit.content || '').toLowerCase();
+                    
+                    return customerName.includes(searchTerm) || content.includes(searchTerm);
+                });
+                
+                displayVisits(filteredVisits);
+            }
+            
+            // 计算回访统计数据
+            function calculateVisitStatistics(visits) {
+                // 获取当前日期
+                const now = new Date();
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                
+                // 本月回访次数
+                const monthlyVisits = visits.filter(visit => {
+                    const visitDate = new Date(visit.visitTime);
+                    return visitDate >= firstDayOfMonth;
+                });
+                
+                document.getElementById('monthlyVisitCount').textContent = monthlyVisits.length;
+                
+                // 回访客户数量 (使用Set来去重)
+                const uniqueCustomers = new Set();
+                visits.forEach(visit => {
+                    if (visit.customerId) {
+                        uniqueCustomers.add(visit.customerId);
+                    }
+                });
+                
+                document.getElementById('visitedCustomersCount').textContent = uniqueCustomers.size;
+                
+                // 平均回访满意度 (假设effect字段表示满意度)
+                const satisfactionMap = {
+                    '非常满意': 5,
+                    '满意': 4,
+                    '良好': 3,
+                    '一般': 2,
+                    '不满意': 1
+                };
+                
+                let totalSatisfaction = 0;
+                let validSatisfactionCount = 0;
+                
+                visits.forEach(visit => {
+                    if (visit.effect && satisfactionMap[visit.effect]) {
+                        totalSatisfaction += satisfactionMap[visit.effect];
+                        validSatisfactionCount++;
+                    }
+                });
+                
+                const avgSatisfaction = validSatisfactionCount > 0 
+                    ? (totalSatisfaction / validSatisfactionCount).toFixed(1) 
+                    : '-';
+                    
+                document.getElementById('avgSatisfaction').textContent = avgSatisfaction;
+                
+                // 最常联系的客户
+                const customerVisitCounts = {};
+                visits.forEach(visit => {
+                    const customerId = visit.customerId;
+                    const customerName = visit.customerName || '未知客户';
+                    
+                    if (customerId) {
+                        if (!customerVisitCounts[customerId]) {
+                            customerVisitCounts[customerId] = { 
+                                count: 0, 
+                                name: customerName 
+                            };
+                        }
+                        customerVisitCounts[customerId].count++;
+                    }
+                });
+                
+                let topCustomer = { id: null, count: 0, name: '-' };
+                
+                for (const customerId in customerVisitCounts) {
+                    if (customerVisitCounts[customerId].count > topCustomer.count) {
+                        topCustomer = { 
+                            id: customerId, 
+                            count: customerVisitCounts[customerId].count,
+                            name: customerVisitCounts[customerId].name
+                        };
+                    }
+                }
+                
+                document.getElementById('topVisitedCustomer').textContent = topCustomer.name;
+            }
+            
+            // 打开回访详情模态框
+            function openVisitDetails(element) {
+                const modal = document.getElementById('visitRecordModal');
+                
+                // 填充模态框数据
+                document.getElementById('modalCustomerName').textContent = element.getAttribute('data-customer-name');
+                document.getElementById('modalVisitTime').textContent = element.getAttribute('data-visit-time');
+                document.getElementById('modalContent').textContent = element.getAttribute('data-content');
+                document.getElementById('modalEffect').textContent = element.getAttribute('data-effect');
+                document.getElementById('modalSatisfaction').textContent = element.getAttribute('data-satisfaction') || '未记录';
+                
+                // 设置意向等级，添加对应的样式
+                const intention = element.getAttribute('data-intention');
+                let intentionClass = 'intention-d';
+                if (intention === 'H') intentionClass = 'intention-h';
+                else if (intention === 'A') intentionClass = 'intention-a';
+                else if (intention === 'B') intentionClass = 'intention-b';
+                else if (intention === 'C') intentionClass = 'intention-c';
+                
+                document.getElementById('modalIntention').textContent = intention;
+                document.getElementById('modalIntention').className = `detail-value ${intentionClass}`;
+                
+                document.getElementById('modalFollowUp').textContent = element.getAttribute('data-follow-up');
+                
+                // 设置按钮的data-id属性
+                const visitId = element.getAttribute('data-visit-id');
+                document.getElementById('editVisitButton').setAttribute('data-id', visitId);
+                document.getElementById('deleteVisitButton').setAttribute('data-id', visitId);
+                
+                // 显示模态框
+                modal.classList.add('active');
+            }
+            
+            // 删除回访记录
+            function deleteVisitRecord(visitId) {
+                api.delete(`/visits/${visitId}`)
+                    .then(() => {
+                        showToast('删除成功');
+                        // 关闭模态框
+                        document.getElementById('visitRecordModal').classList.remove('active');
+                        // 重新加载记录和统计数据
+                        fetchVisits();
+                    })
+                    .catch(error => {
+                        console.error('删除记录失败:', error);
+                        showToast('删除记录失败', 'error');
+                    });
+            }
+            
+            // 模态框关闭功能
+            const modal = document.getElementById('visitRecordModal');
+            document.querySelector('#visitRecordModal .ios-modal-close').addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            // 删除记录按钮事件
+            document.getElementById('deleteVisitButton').addEventListener('click', function() {
+                const visitId = this.getAttribute('data-id');
+                if (confirm('确定要删除这条回访记录吗？此操作不可恢复。')) {
+                    deleteVisitRecord(visitId);
+                }
+            });
+            
+            // 编辑记录按钮事件
+            document.getElementById('editVisitButton').addEventListener('click', function() {
+                const visitId = this.getAttribute('data-id');
+                window.location.href = `visit-edit.html?id=${visitId}`;
+            });
+        });
+    </script>
+</body>
+</html>

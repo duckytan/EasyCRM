@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑回访记录 - 客户信息管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="../css/common.css">
+    <style>
+        /* 客户意向选择区域样式优化 */
+        .intention-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .intention-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .intention-option.selected {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .intention-option-h {
+            background-color: rgba(239, 68, 68, 0.85);
+            color: white;
+        }
+        
+        .intention-option-a {
+            background-color: rgba(245, 158, 11, 0.85);
+            color: white;
+        }
+        
+        .intention-option-b {
+            background-color: rgba(252, 211, 77, 0.85);
+            color: black;
+        }
+        
+        .intention-option-c {
+            background-color: rgba(16, 185, 129, 0.8);
+            color: black;
+        }
+        
+        .intention-option-d {
+            background-color: rgba(99, 102, 241, 0.8);
+            color: white;
+        }
+        
+        .intention-hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        /* 深色模式样式 */
+        :root[data-theme="dark"] .intention-option {
+            border-color: #333;
+        }
+        
+        :root[data-theme="dark"] .intention-option.selected {
+            border-color: #60a5fa;
+        }
+        
+        :root[data-theme="dark"] .intention-option-h {
+            background-color: rgba(248, 113, 113, 0.8);
+        }
+        
+        :root[data-theme="dark"] .intention-option-a {
+            background-color: rgba(251, 191, 36, 0.8);
+        }
+        
+        :root[data-theme="dark"] .intention-option-b {
+            background-color: rgba(253, 230, 138, 0.85);
+        }
+        
+        :root[data-theme="dark"] .intention-option-c {
+            background-color: rgba(110, 231, 183, 0.8);
+        }
+        
+        :root[data-theme="dark"] .intention-option-d {
+            background-color: rgba(165, 180, 252, 0.8);
+        }
+        
+        :root[data-theme="dark"] .intention-hint {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <div class="ios-page-container">
+        <!-- iOS状态栏 -->
+        <div class="ios-status-bar" style="display: none;"></div>
+        
+        <!-- 标题栏 -->
+        <div class="ios-title-bar">
+            <div class="title-bar-left">
+                <a href="visit-records.html">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </div>
+            <div>编辑回访记录</div>
+            <div class="title-bar-right"></div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div class="main-content pb-20">
+            <form id="visitForm" class="ios-card">
+                <div class="card-body">
+                    <!-- 客户选择 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">选择客户</label>
+                        <select id="customerId" class="ios-form-input">
+                            <option value="">-- 请选择客户 --</option>
+                            <!-- 客户列表将由JavaScript动态填充 -->
+                        </select>
+                    </div>
+                    
+                    <!-- 回访时间 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">回访时间</label>
+                        <input type="datetime-local" id="visitTime" class="ios-form-input">
+                    </div>
+                    
+                    <!-- 回访内容 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">回访内容</label>
+                        <textarea id="content" class="ios-form-input" rows="3"></textarea>
+                    </div>
+                    
+                    <!-- 回访效果 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">回访效果</label>
+                        <select id="effect" class="ios-form-input">
+                            <option value="">-- 请选择回访效果 --</option>
+                            <option value="非常满意">非常满意</option>
+                            <option value="满意">满意</option>
+                            <option value="良好">良好</option>
+                            <option value="一般">一般</option>
+                            <option value="不满意">不满意</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 满意调查 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">满意调查</label>
+                        <textarea id="satisfaction" class="ios-form-input" rows="2"></textarea>
+                    </div>
+                    
+                    <!-- 客户意向 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">客户意向</label>
+                        <div class="intention-selector">
+                            <div class="intention-option intention-option-h" data-value="H">H</div>
+                            <div class="intention-option intention-option-a" data-value="A">A</div>
+                            <div class="intention-option intention-option-b" data-value="B">B</div>
+                            <div class="intention-option intention-option-c" data-value="C">C</div>
+                            <div class="intention-option intention-option-d" data-value="D">D</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 后续跟进 -->
+                    <div class="ios-form-group">
+                        <label class="ios-form-label">后续跟进</label>
+                        <textarea id="followUp" class="ios-form-input" rows="2"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="ios-button-primary mt-4">保存修改</button>
+                    <button type="button" id="cancelButton" class="ios-button-secondary mt-3">取消</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 底部导航栏由JS加载 -->
+    </div>
+    
+    <script src="../js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const visitId = urlParams.get('id');
+            
+            if (!visitId) {
+                showToast('未指定记录ID，请返回重试', 'error');
+                setTimeout(() => {
+                    window.location.href = 'visit-records.html';
+                }, 1500);
+                return;
+            }
+            
+            // 先加载客户列表填充下拉选择框，然后再加载记录详情
+            loadCustomers().then(() => {
+                // 客户列表加载完成后再加载回访记录详情
+                loadVisitDetails(visitId);
+                
+                // 如果URL中包含id参数，则将客户选择框设置为禁用状态
+                const customerSelect = document.getElementById('customerId');
+                customerSelect.disabled = true; // 设置为禁用状态
+                // 添加一个提示信息
+                const customerFormGroup = customerSelect.closest('.ios-form-group');
+                const helpText = document.createElement('div');
+                helpText.className = 'text-sm text-gray-500 mt-1';
+                helpText.textContent = '编辑模式下客户信息不可更改';
+                customerFormGroup.appendChild(helpText);
+            }).catch(error => {
+                console.error('初始化失败:', error);
+                showToast('初始化失败，请刷新页面重试', 'error');
+            });
+            
+            // 取消按钮
+            document.getElementById('cancelButton').addEventListener('click', function() {
+                window.location.href = 'visit-records.html';
+            });
+            
+            // 表单提交处理
+            document.getElementById('visitForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const customerId = document.getElementById('customerId').value;
+                if (!customerId) {
+                    showToast('请选择客户', 'error');
+                    return;
+                }
+                
+                const visitData = {
+                    customerId: customerId,
+                    visitTime: document.getElementById('visitTime').value,
+                    content: document.getElementById('content').value,
+                    effect: document.getElementById('effect').value,
+                    satisfaction: document.getElementById('satisfaction').value,
+                    intention: document.getElementById('intention').value,
+                    followUp: document.getElementById('followUp').value
+                };
+                
+                updateVisitRecord(visitId, visitData);
+            });
+        });
+        
+        // 加载客户列表
+        function loadCustomers() {
+            return new Promise((resolve, reject) => {
+                api.get('/customers')
+                    .then(customers => {
+                        const customerSelect = document.getElementById('customerId');
+                        
+                        // 按名称排序
+                        customers.sort((a, b) => {
+                            if (a.name && b.name) {
+                                return a.name.localeCompare(b.name);
+                            }
+                            return 0;
+                        });
+                        
+                        customers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.id;
+                            option.textContent = customer.name || `客户 #${customer.id}`;
+                            customerSelect.appendChild(option);
+                        });
+                        
+                        resolve(); // 客户列表加载完成
+                    })
+                    .catch(error => {
+                        console.error('获取客户列表失败:', error);
+                        showToast('获取客户列表失败，请刷新页面重试', 'error');
+                        reject(error);
+                    });
+            });
+        }
+        
+        // 加载回访记录详情
+        function loadVisitDetails(visitId) {
+            api.get(`/visits/${visitId}`)
+                .then(visit => {
+                    console.log('获取到回访记录:', visit);
+                    
+                    // 填充表单字段
+                    const customerId = visit.customerId;
+                    console.log('回访关联的客户ID:', customerId);
+                    
+                    if (customerId) {
+                        // 确保客户ID存在于下拉列表中
+                        const customerSelect = document.getElementById('customerId');
+                        let customerExists = false;
+                        
+                        for (let i = 0; i < customerSelect.options.length; i++) {
+                            if (customerSelect.options[i].value == customerId) {
+                                customerExists = true;
+                                break;
+                            }
+                        }
+                        
+                        if (customerExists) {
+                            customerSelect.value = customerId;
+                            console.log('已选中客户:', customerId);
+                        } else {
+                            console.error('客户ID不存在于下拉列表中:', customerId);
+                        }
+                    } else {
+                        console.warn('回访记录没有关联客户ID');
+                    }
+                    
+                    // 处理日期时间格式
+                    if (visit.visitTime) {
+                        const visitDate = new Date(visit.visitTime);
+                        const year = visitDate.getFullYear();
+                        const month = String(visitDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(visitDate.getDate()).padStart(2, '0');
+                        const hours = String(visitDate.getHours()).padStart(2, '0');
+                        const minutes = String(visitDate.getMinutes()).padStart(2, '0');
+                        
+                        const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                        document.getElementById('visitTime').value = formattedDateTime;
+                    } else {
+                        // 设置当前时间为默认值
+                        setDefaultVisitTime();
+                    }
+                    
+                    document.getElementById('content').value = visit.content || '';
+                    document.getElementById('effect').value = visit.effect || '';
+                    document.getElementById('satisfaction').value = visit.satisfaction || '';
+                    document.getElementById('intention').value = visit.intention || '';
+                    document.getElementById('followUp').value = visit.followUp || '';
+                })
+                .catch(error => {
+                    console.error('获取回访记录详情失败:', error);
+                    showToast('获取回访记录详情失败，请返回重试', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'visit-records.html';
+                    }, 1500);
+                });
+        }
+        
+        // 设置当前时间为默认回访时间
+        function setDefaultVisitTime() {
+            const now = new Date();
+            
+            // 格式化时间为datetime-local输入框所需格式: YYYY-MM-DDThh:mm
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
+            // 设置为默认值
+            document.getElementById('visitTime').value = formattedDateTime;
+        }
+        
+        // 更新回访记录
+        function updateVisitRecord(visitId, visitData) {
+            if (!visitData.visitTime) {
+                showToast('请选择回访时间', 'error');
+                return;
+            }
+            
+            api.put(`/visits/${visitId}`, visitData)
+                .then(response => {
+                    showToast('更新成功');
+                    setTimeout(() => {
+                        window.location.href = 'visit-records.html';
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('更新回访记录失败:', error);
+                    showToast('更新失败，请重试', 'error');
+                });
+        }
+        
+        // 处理意向选择UI
+        function setupIntentionSelector() {
+            const options = document.querySelectorAll('.intention-option');
+            let selectedValue = '';
+            
+            // 添加隐藏字段存储选中的值
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.id = 'intention';
+            hiddenInput.name = 'intention';
+            document.querySelector('.intention-selector').appendChild(hiddenInput);
+            
+            // 为每个选项添加点击事件
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除之前的选中状态
+                    options.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // 添加新的选中状态
+                    this.classList.add('selected');
+                    
+                    // 保存选中的值
+                    selectedValue = this.getAttribute('data-value');
+                    hiddenInput.value = selectedValue;
+                });
+            });
+            
+            // 更新UI以显示当前值
+            function updateIntentionUI(value) {
+                // 清除所有选中状态
+                options.forEach(opt => opt.classList.remove('selected'));
+                
+                // 如果有值，选中对应的选项
+                if (value) {
+                    const selectedOption = document.querySelector(`.intention-option[data-value="${value}"]`);
+                    if (selectedOption) {
+                        selectedOption.classList.add('selected');
+                        hiddenInput.value = value;
+                    }
+                }
+            }
+            
+            return {
+                setValue: updateIntentionUI,
+                getValue: () => hiddenInput.value
+            };
+        }
+        
+        // 在DOM加载完成后初始化意向选择器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化意向选择器
+            const intentionSelector = setupIntentionSelector();
+            
+            // 其余代码保持不变
+            // ... existing code ...
+            
+            // 加载回访记录详情时更新意向选择UI
+            function loadVisitDetails(visitId) {
+                api.get(`/visits/${visitId}`)
+                    .then(visit => {
+                        if (!visit) {
+                            showToast('未找到回访记录', 'error');
+                            return;
+                        }
+                        
+                        // 填充表单字段
+                        document.getElementById('customerId').value = visit.customerId;
+                        document.getElementById('visitTime').value = visit.visitTime ? visit.visitTime.split('T')[0] : '';
+                        document.getElementById('content').value = visit.content || '';
+                        document.getElementById('effect').value = visit.effect || '';
+                        document.getElementById('followUp').value = visit.followUp || '';
+                        
+                        // 更新意向选择UI
+                        intentionSelector.setValue(visit.intention);
+                    })
+                    .catch(error => {
+                        console.error('获取回访记录详情失败:', error);
+                        showToast('获取回访记录详情失败', 'error');
+                    });
+            }
+            
+            // 表单提交处理
+            document.getElementById('visitForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 获取表单数据
+                const visitData = {
+                    customerId: document.getElementById('customerId').value,
+                    visitTime: document.getElementById('visitTime').value,
+                    content: document.getElementById('content').value,
+                    effect: document.getElementById('effect').value,
+                    followUp: document.getElementById('followUp').value,
+                    intention: intentionSelector.getValue() // 从意向选择器获取值
+                };
+                
+                // 提交表单
+                const visitId = getVisitIdFromUrl();
+                if (visitId) {
+                    updateVisit(visitId, visitData);
+                } else {
+                    createVisit(visitData);
+                }
+            });
+            
+            // 处理编辑模式
+            const visitId = getVisitIdFromUrl();
+            if (visitId) {
+                loadVisitDetails(visitId);
+            } else {
+                // 如果是新建，可以设置默认意向
+                intentionSelector.setValue('B'); // 设置默认值为中等意向
+            }
+        });
+    </script>
+</body>
+</html> 
