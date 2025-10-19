@@ -1,0 +1,32 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.local
+
+# SQLite DB and backups
+*.db
+!/node_modules/**
+database.db
+crm.db
+backups/
+
+# Logs
+logs/
+*.log
+
+# Coverage / reports
+coverage/
+*.lcov
+
+# IDE
+.vscode/
+.idea/

@@ -1,57 +1,53 @@
-# AI-CRM 系统
+# EasyCRM
 
-## 启动服务器
+一个基于 Node.js/Express + SQLite 的简洁 CRM（客户关系管理）应用。后端提供 REST API 并同时托管静态前端（原生 HTML/CSS/JS）。
 
-### 方法1：使用最小化版本服务器(推荐)
+- 快速了解项目架构、功能、数据模型与 API，请查看 docs/overview.md
+- 主要用途：客户/联系人管理、购买记录与回访、仪表盘统计、提醒聚合、预设数据与用户设置、数据备份/恢复
 
-这个版本的服务器已经过简化，移除了可能导致错误的部分：
 
-```
-node minimal-server.js
-```
+## 快速开始
 
-启动后，访问:
-- 测试页面: http://localhost:3001/test
-- API测试: http://localhost:3001/api/test
+前置条件：
+- Node.js ≥ 16（推荐 18+）
+- 无需单独安装数据库（内置 SQLite）
 
-### 方法2：使用主服务器
+安装与运行：
+1) 安装依赖
+   - npm install
+2) 初始化数据库（推荐首次执行，写入示例数据与默认管理员）
+   - npm run init-db
+3) 启动服务
+   - npm start
+4) 打开浏览器访问
+   - http://localhost:3001/pages/login.html
+   - 默认管理员账号：admin / admin123
 
-如果你想使用完整功能的服务器，但注意可能会出现启动问题：
+可选：开发模式热重载
+- npm run dev（需自行安装 nodemon）
 
-```
-node server.js
-```
 
-## 常见问题排查
+## 常见问题
+- 端口占用：lsof -i:3001 或 netstat -ano | findstr :3001（Windows）定位并释放端口
+- 登录失败：确保已执行 npm run init-db 创建默认管理员
+- sqlite3 依赖安装问题：建议使用 LTS Node 版本，必要时删除 node_modules 后重装
 
-### 端口占用问题
 
-如果遇到端口被占用，可以使用以下命令查看占用端口的进程：
+## 目录结构（简要）
+- server.js：后端主入口（建表/迁移、默认数据、REST API、静态资源）
+- init-db.js：数据库初始化脚本（清空/重建，写入示例与默认管理员）
+- pages/、css/、js/、assets/：前端静态资源
+- database.db：SQLite 数据文件（运行时生成）
+- docs/overview.md：项目概览文档（功能/架构/依赖/运行方式等）
 
-Windows:
-```
-netstat -ano | findstr :3001
-```
 
-然后使用任务管理器关闭占用端口的进程。
+## 主要依赖与脚本
+- 依赖：express、cors、sqlite3
+- 脚本：
+  - npm start：node server.js
+  - npm run dev：nodemon server.js（需安装 nodemon）
+  - npm run init-db：初始化/重置数据库
 
-### 数据库问题
 
-服务器使用SQLite数据库，数据库文件存储在`db/database.db`中。如果数据库损坏，可以删除该文件，服务器会自动重新创建。
-
-## API列表
-
-- `/api/test` - 基本API测试
-- `/api/dashboard/statistics` - 仪表盘统计数据
-- `/api/dashboard/monthly-statistics` - 月度统计数据
-- `/api/reminder-cycles` - 提醒周期数据
-
-## 项目结构
-
-- `minimal-server.js` - 简化版服务器，只包含必要功能
-- `server.js` - 完整版服务器
-- `test.html` - API测试页面
-- `pages/` - 存放各个页面
-- `css/` - 样式文件
-- `js/` - JavaScript文件
-- `db/` - 数据库文件
+## 许可证
+本项目以 ISC 许可证开源，详见 package.json。
