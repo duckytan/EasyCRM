@@ -1,14 +1,15 @@
 const bcrypt = require('bcryptjs');
-const { createToken, revokeToken } = require('../middlewares/auth');
+const { createToken, createTokenPair, verifyRefreshToken } = require('../middlewares/auth');
 const { validate, CommonSchemas } = require('../middlewares/validator');
 const { logger } = require('../middlewares/logger');
+const { loginLimiter, strictLimiter } = require('../middlewares/rateLimiter');
 
 function isHashed(password) {
   return typeof password === 'string' && password.startsWith('$2');
 }
 
 function registerAuthRoutes(app, db) {
-  app.post('/api/auth/login', validate(CommonSchemas.login), (req, res) => {
+  app.post('/api/auth/login', loginLimiter, validate(CommonSchemas.login), (req, res) => {
     const { username, password } = req.body;
 
     db.get('SELECT * FROM Managers WHERE name = ?', [username], (err, row) => {
@@ -43,22 +44,54 @@ function registerAuthRoutes(app, db) {
         return res.status(401).json({ success: false, error: '用户名或密码错误' });
       }
 
-      const token = createToken(row);
+      const { token, refreshToken } = createTokenPair(row);
 
       logger.info('登录成功', { username, userId: row.id });
       return res.json({
         success: true,
         user: { id: row.id, name: row.name },
         token,
+        refreshToken,
       });
     });
+  });
+
+  app.post('/api/auth/refresh', strictLimiter, validate(CommonSchemas.tokenRefresh), (req, res) => {
+    const { refreshToken } = req.body;
+
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+
+      db.get('SELECT * FROM Managers WHERE id = ?', [decoded.id], (err, manager) => {
+        if (err) {
+          logger.error('Token刷新失败: 数据库查询错误', { error: err.message });
+          return res.status(500).json({ error: '服务器错误' });
+        }
+
+        if (!manager) {
+          logger.warn('Token刷新失败: 用户不存在', { userId: decoded.id });
+          return res.status(401).json({ error: '用户不存在' });
+        }
+
+        const newToken = createToken(manager);
+
+        logger.info('Token刷新成功', { userId: manager.id });
+        return res.json({
+          success: true,
+          token: newToken,
+        });
+      });
+    } catch (error) {
+      logger.warn('Token刷新失败: refreshToken无效或已过期', { error: error.message });
+      return res.status(401).json({ error: 'refreshToken无效或已过期，请重新登录' });
+    }
   });
 
   app.post('/api/auth/logout', (_req, res) => {
     res.json({ success: true });
   });
 
-  app.post('/api/managers/change-password', validate(CommonSchemas.changePassword), (req, res) => {
+  app.post('/api/managers/change-password', strictLimiter, validate(CommonSchemas.changePassword), (req, res) => {
     const { oldPassword, newPassword } = req.body;
 
     db.get('SELECT * FROM Managers WHERE id = 1', [], (err, row) => {

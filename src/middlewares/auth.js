@@ -1,15 +1,47 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config');
+const { JWT_SECRET, JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN } = require('../config');
 
 function createToken(manager) {
   const payload = {
     id: manager.id,
     name: manager.name,
+    type: 'access',
   };
 
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   });
+}
+
+function createRefreshToken(manager) {
+  const payload = {
+    id: manager.id,
+    name: manager.name,
+    type: 'refresh',
+  };
+
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_REFRESH_EXPIRES_IN,
+  });
+}
+
+function createTokenPair(manager) {
+  return {
+    token: createToken(manager),
+    refreshToken: createRefreshToken(manager),
+  };
+}
+
+function verifyRefreshToken(refreshToken) {
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET);
+    if (decoded.type !== 'refresh') {
+      throw new Error('Invalid token type');
+    }
+    return decoded;
+  } catch (error) {
+    throw error;
+  }
 }
 
 function revokeToken(_token) {
@@ -26,6 +58,12 @@ function verifyToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    const tokenType = decoded.type || 'access';
+
+    if (tokenType !== 'access') {
+      return res.status(401).json({ error: '无效的访问令牌' });
+    }
+
     req.user = decoded;
     req.isAuthenticated = true;
     next();
@@ -44,8 +82,14 @@ function optionalAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    req.isAuthenticated = true;
+    const tokenType = decoded.type || 'access';
+
+    if (tokenType !== 'access') {
+      req.isAuthenticated = false;
+    } else {
+      req.user = decoded;
+      req.isAuthenticated = true;
+    }
   } catch (error) {
     req.isAuthenticated = false;
   }
@@ -55,6 +99,9 @@ function optionalAuth(req, res, next) {
 
 module.exports = {
   createToken,
+  createRefreshToken,
+  createTokenPair,
+  verifyRefreshToken,
   revokeToken,
   verifyToken,
   optionalAuth,
