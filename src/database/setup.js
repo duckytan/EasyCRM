@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const { createIndexes } = require('./indexes');
 
 function migrateDatabase(db) {
   console.log('检查表结构并进行迁移...');
@@ -514,6 +515,7 @@ function initializeDatabase(db) {
     db.serialize(() => {
       createSchema(db);
       initializeDefaultData(db);
+      createIndexes(db);
       resolve();
     });
   });

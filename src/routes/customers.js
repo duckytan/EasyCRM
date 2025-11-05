@@ -27,15 +27,75 @@ function getSubordinateContactsDetails(db, customer, res) {
   );
 }
 
+const { parsePagination, buildPagination } = require('../utils/pagination');
+
 function registerCustomerRoutes(app, db) {
-  app.get('/api/customers', (_req, res) => {
-    db.all('SELECT * FROM Customers', [], (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json(rows);
-    });
+  app.get('/api/customers', (req, res) => {
+    const { usePagination, page, limit, offset } = parsePagination(req.query);
+    const searchTerm = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+    const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
+    const intention = typeof req.query.intention === 'string' ? req.query.intention.trim() : '';
+    const region = typeof req.query.region === 'string' ? req.query.region.trim() : '';
+
+    const conditions = [];
+    const params = [];
+
+    if (searchTerm) {
+      conditions.push('(name LIKE ? OR phone LIKE ? OR email LIKE ? OR company LIKE ?)');
+      const searchPattern = `%${searchTerm}%`;
+      params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+    }
+
+    if (category) {
+      conditions.push('category = ?');
+      params.push(category);
+    }
+
+    if (intention) {
+      conditions.push('intention = ?');
+      params.push(intention);
+    }
+
+    if (region) {
+      conditions.push('region = ?');
+      params.push(region);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    if (usePagination) {
+      const countSql = `SELECT COUNT(*) as total FROM Customers ${whereClause}`;
+      db.get(countSql, params, (countErr, countRow) => {
+        if (countErr) {
+          res.status(500).json({ error: countErr.message });
+          return;
+        }
+
+        const total = countRow.total;
+        const dataSql = `SELECT * FROM Customers ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+        const dataParams = [...params, limit, offset];
+
+        db.all(dataSql, dataParams, (err, rows) => {
+          if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+          }
+          res.json({
+            data: rows,
+            pagination: buildPagination(page, limit, total),
+          });
+        });
+      });
+    } else {
+      const sql = `SELECT * FROM Customers ${whereClause} ORDER BY created_at DESC`;
+      db.all(sql, params, (err, rows) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        res.json(rows);
+      });
+    }
   });
 
   app.get('/api/customers/:id', (req, res) => {
