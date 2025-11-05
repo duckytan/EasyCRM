@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 function migrateDatabase(db) {
   console.log('检查表结构并进行迁移...');
 
@@ -137,6 +139,30 @@ function migrateDatabase(db) {
 
 function initializeDefaultData(db) {
   console.log('初始化默认数据...');
+
+  db.get('SELECT COUNT(*) as count FROM Managers', (err, row) => {
+    if (err) {
+      console.error('检查管理员表时出错:', err);
+      return;
+    }
+
+    if (row.count === 0) {
+      console.log('添加默认管理员账户...');
+      const defaultPassword = 'admin123';
+      const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
+      db.run(
+        `INSERT INTO Managers (name, password) VALUES (?, ?)`,
+        ['admin', hashedPassword],
+        (insertErr) => {
+          if (insertErr) {
+            console.error('添加默认管理员时出错:', insertErr);
+          } else {
+            console.log('默认管理员账户已创建: admin/admin123');
+          }
+        },
+      );
+    }
+  });
 
   db.get('SELECT COUNT(*) as count FROM SuperiorContacts', (err, row) => {
     if (err) {
