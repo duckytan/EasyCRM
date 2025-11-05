@@ -15,15 +15,16 @@
 
 ## 技术栈
 
-- **后端**：Node.js + Express
+- **后端**：Node.js + Express（已完成模块化重构）
 - **数据库**：SQLite
 - **前端**：HTML + CSS + 原生 JavaScript
+- **架构模式**：MVC 分层架构（路由-中间件-数据库）
 
 ## 目录结构
 
 ```
 .
-├── server.js              # 主服务器文件
+├── server.js              # 主服务器文件（启动入口）
 ├── init-db.js             # 数据库初始化脚本
 ├── package.json           # 项目依赖配置
 ├── .gitignore            # Git 忽略文件配置
@@ -37,18 +38,25 @@
 │   ├── css/              # 样式文件
 │   ├── js/               # 前端 JavaScript
 │   └── assets/           # 图标等资源
-├── src/                  # 源代码目录（预留，待重构）
-│   ├── config/           # 配置文件
-│   ├── database/         # 数据库相关
-│   ├── routes/           # 路由
-│   ├── controllers/      # 控制器
-│   ├── services/         # 业务逻辑
-│   ├── middlewares/      # 中间件
-│   ├── models/           # 数据模型
+├── src/                  # 源代码目录（已完成模块化）
+│   ├── app.js            # Express应用初始化
+│   ├── config/           # 配置管理（端口、路径等）
+│   ├── database/         # 数据库连接和初始化
+│   ├── routes/           # 17个独立路由模块
+│   ├── middlewares/      # 认证、错误处理中间件
+│   ├── controllers/      # 控制器（预留）
+│   ├── services/         # 业务逻辑（预留）
+│   ├── models/           # 数据模型（预留）
 │   └── utils/            # 工具函数
 └── docs/                 # 文档目录
     ├── API.md            # API 接口文档
-    └── 优化清单.md       # 系统优化建议清单
+    ├── development.md    # 开发指南
+    ├── project_restructuring_report.md  # 重构报告
+    ├── REFACTORING_GUIDE.md             # 模块化重构指南
+    ├── ARCHITECTURE.md   # 架构说明 ⭐新增⭐
+    ├── TASK_LIST.md      # 任务进度
+    ├── 优化清单.md       # 系统优化建议清单
+    └── CHANGELOG.md      # 更新日志
 ```
 
 ## 安装与运行
