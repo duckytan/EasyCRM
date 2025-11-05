@@ -2,8 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { PUBLIC_DIR } = require('./config');
+const { registerAllRoutes } = require('./routes');
+const { errorHandler, notFoundHandler } = require('./middlewares/errorHandler');
 
-function createApp() {
+function createApp(db) {
   const app = express();
 
   app.use(cors());
@@ -14,6 +16,11 @@ function createApp() {
   app.get('/', (_req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
   });
+
+  registerAllRoutes(app, db);
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   return app;
 }
