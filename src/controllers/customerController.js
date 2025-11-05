@@ -1,5 +1,6 @@
 const { CustomerService } = require('../services/customerService');
 const { logger } = require('../middlewares/logger');
+const { parsePagination, buildPagination } = require('../utils/pagination');
 
 class CustomerController {
   constructor() {
@@ -8,8 +9,28 @@ class CustomerController {
 
   async getAllCustomers(req, res) {
     try {
-      const customers = await this.service.getAllCustomers();
-      res.json(customers);
+      const pagination = parsePagination(req.query);
+      const filters = {
+        search: typeof req.query.search === 'string' ? req.query.search.trim() : '',
+        category: typeof req.query.category === 'string' ? req.query.category.trim() : '',
+        intention: typeof req.query.intention === 'string' ? req.query.intention.trim() : '',
+        region: typeof req.query.region === 'string' ? req.query.region.trim() : '',
+      };
+
+      const result = await this.service.getAllCustomers({
+        ...pagination,
+        filters,
+      });
+
+      if (pagination.usePagination) {
+        res.json({
+          data: result.rows,
+          pagination: buildPagination(pagination.page, pagination.limit, result.total),
+        });
+        return;
+      }
+
+      res.json(result.rows);
     } catch (error) {
       logger.error('获取客户列表失败', { error: error.message });
       res.status(500).json({ error: '获取客户列表失败' });

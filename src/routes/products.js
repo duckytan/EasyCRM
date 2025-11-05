@@ -1,28 +1,72 @@
+const { parsePagination, buildPagination } = require('../utils/pagination');
+
 function registerProductRoutes(app, db) {
   app.get('/api/products', (req, res) => {
-    const customerId = req.query.customerId;
+    const { usePagination, page, limit, offset } = parsePagination(req.query);
+    const searchTerm = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
-    let sql = `
-      SELECT p.*, c.name as customerName
-      FROM Products p
-      LEFT JOIN Customers c ON p.customerId = c.id`;
+    let customerId = undefined;
+    if (req.query.customerId !== undefined) {
+      const parsedCustomerId = Number.parseInt(req.query.customerId, 10);
+      if (Number.isNaN(parsedCustomerId)) {
+        res.status(400).json({ error: '客户ID必须是数字' });
+        return;
+      }
+      customerId = parsedCustomerId;
+    }
 
+    const conditions = [];
     const params = [];
 
-    if (customerId) {
-      sql += ' WHERE p.customerId = ?';
+    if (customerId !== undefined) {
+      conditions.push('p.customerId = ?');
       params.push(customerId);
     }
 
-    sql += ' ORDER BY p.purchaseDate DESC';
+    if (searchTerm) {
+      conditions.push('(p.productName LIKE ? OR c.name LIKE ? OR p.afterSale LIKE ?)');
+      const searchPattern = `%${searchTerm}%`;
+      params.push(searchPattern, searchPattern, searchPattern);
+    }
 
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json(rows);
-    });
+    const whereClause = conditions.length > 0 ? ` WHERE ${conditions.join(' AND ')}` : '';
+    const baseQuery = 'FROM Products p LEFT JOIN Customers c ON p.customerId = c.id';
+    const orderClause = ' ORDER BY COALESCE(p.purchaseDate, \'\') DESC, p.id DESC';
+
+    if (usePagination) {
+      const countSql = `SELECT COUNT(*) as total ${baseQuery}${whereClause}`;
+      db.get(countSql, params, (countErr, countRow) => {
+        if (countErr) {
+          res.status(500).json({ error: countErr.message });
+          return;
+        }
+
+        const total = countRow.total;
+        const dataSql = `SELECT p.*, c.name as customerName ${baseQuery}${whereClause}${orderClause} LIMIT ? OFFSET ?`;
+        const dataParams = [...params, limit, offset];
+
+        db.all(dataSql, dataParams, (err, rows) => {
+          if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+          }
+
+          res.json({
+            data: rows,
+            pagination: buildPagination(page, limit, total),
+          });
+        });
+      });
+    } else {
+      const sql = `SELECT p.*, c.name as customerName ${baseQuery}${whereClause}${orderClause}`;
+      db.all(sql, params, (err, rows) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        res.json(rows);
+      });
+    }
   });
 
   app.get('/api/products/:id', (req, res) => {

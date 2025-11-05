@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 // 创建数据库连接
 const db = new sqlite3.Database('./database.db', (err) => {
@@ -206,15 +207,16 @@ function initDatabase() {
       }
       console.log('已创建管理员表');
 
-      // 插入默认管理员账户
+      // 插入默认管理员账户（密码加密）
+      const hashedPassword = bcrypt.hashSync('admin123', 10);
       db.run(
         `INSERT INTO Managers (name, password) VALUES (?, ?)`,
-        ['admin', 'admin123'],
+        ['admin', hashedPassword],
         function(err) {
           if (err) {
             console.error('插入管理员数据失败:', err.message);
           } else {
-            console.log('已创建默认管理员账户: admin/admin123');
+            console.log('已创建默认管理员账户: admin/admin123 (密码已加密)');
           }
         }
       );

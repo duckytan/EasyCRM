@@ -16,6 +16,7 @@ const { registerPresetProductRoutes } = require('./presetProducts');
 const { registerVisitTypeRoutes } = require('./visitTypes');
 const { registerNavigationModeRoutes } = require('./navigationModes');
 const { registerReminderCycleRoutes } = require('./reminderCycles');
+const { registerManagerRoutes } = require('./manager');
 
 function registerAllRoutes(app, db) {
   registerCustomerRoutes(app, db);
@@ -36,6 +37,7 @@ function registerAllRoutes(app, db) {
   registerVisitTypeRoutes(app, db);
   registerNavigationModeRoutes(app, db);
   registerReminderCycleRoutes(app, db);
+  registerManagerRoutes(app, db);
 }
 
 module.exports = {

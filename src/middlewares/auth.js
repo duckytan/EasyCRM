@@ -1,32 +1,55 @@
-const validTokens = new Set();
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config');
 
-function generateToken() {
-  return Math.random().toString(36).substr(2) + Date.now().toString(36);
+function createToken(manager) {
+  const payload = {
+    id: manager.id,
+    name: manager.name,
+  };
+
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 }
 
-function createToken(managerId) {
-  const token = generateToken();
-  validTokens.add(token);
-  return token;
-}
-
-function revokeToken(token) {
-  validTokens.delete(token);
+function revokeToken(_token) {
+  // 基于 JWT 的无状态认证，目前不追踪退出状态
+  return true;
 }
 
 function verifyToken(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
 
-  if (!token || !validTokens.has(token)) {
+  if (!token) {
     return res.status(401).json({ error: '未授权访问，请先登录' });
   }
 
-  next();
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    req.isAuthenticated = true;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: '登录状态已失效，请重新登录' });
+  }
 }
 
 function optionalAuth(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
-  req.isAuthenticated = token && validTokens.has(token);
+
+  if (!token) {
+    req.isAuthenticated = false;
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    req.isAuthenticated = true;
+  } catch (error) {
+    req.isAuthenticated = false;
+  }
+
   next();
 }
 
