@@ -53,6 +53,7 @@
     ├── development.md    # 开发指南
     ├── project_restructuring_report.md  # 重构报告
     ├── REFACTORING_GUIDE.md             # 模块化重构指南
+    ├── ARCHITECTURE.md   # 架构说明 ⭐新增⭐
     ├── TASK_LIST.md      # 任务进度
     ├── 优化清单.md       # 系统优化建议清单
     └── CHANGELOG.md      # 更新日志

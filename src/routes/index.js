@@ -1,4 +1,5 @@
 const { registerCustomerRoutes } = require('./customers');
+const { registerCustomerRoutesV2 } = require('./customers-v2');
 const { registerVisitRoutes } = require('./visits');
 const { registerProductRoutes } = require('./products');
 const { registerDashboardRoutes } = require('./dashboard');
@@ -18,6 +19,7 @@ const { registerReminderCycleRoutes } = require('./reminderCycles');
 
 function registerAllRoutes(app, db) {
   registerCustomerRoutes(app, db);
+  registerCustomerRoutesV2(app, db);
   registerVisitRoutes(app, db);
   registerProductRoutes(app, db);
   registerDashboardRoutes(app, db);

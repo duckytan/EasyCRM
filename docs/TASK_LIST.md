@@ -75,25 +75,33 @@
 - [x] 实现统一错误处理中间件
 - [x] 实现认证中间件
 
+### 第八阶段：高级功能增强 (5/5)
+
+- [x] 实现统一日志中间件（logger.js）
+- [x] 创建输入验证框架（validator.js）
+- [x] 创建 Service 层示例（customerService.js）
+- [x] 创建 Controller 层示例（customerController.js）
+- [x] 创建 v2 API 示例路由（customers-v2.js）
+
 ---
 
 ## ⏳ 待完成任务
 
 以下任务由于时间限制和工作量较大，建议后续逐步完成：
 
-### 代码重构（高优先级）
+### 代码重构（中优先级）
 
-- [ ] 提取业务逻辑到 src/services/ 或 src/controllers/
-- [ ] 统一日志中间件
+- [ ] 将更多路由迁移到 Controller/Service 模式
 - [ ] 优化认证机制（令牌持久化、权限控制）
+- [ ] 实现数据访问层（DAO/Repository）
 
 ### 安全增强（高优先级）
 
 - [ ] 实现密码哈希存储（bcrypt）
 - [ ] 改进 token 机制（JWT）
-- [ ] 添加输入验证（Joi/express-validator）
 - [ ] 审查并修复 SQL 注入风险
 - [ ] 实现 HTTPS 支持
+- [ ] 添加请求速率限制（rate limiting）
 
 ### 测试体系（中优先级）
 
