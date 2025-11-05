@@ -13,10 +13,10 @@ const port = 3001;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname)); // 提供静态文件
+app.use(express.static(path.join(__dirname, 'public'))); // 提供静态资源
 
 // 创建数据库连接
-let db = new sqlite3.Database('./database.db', (err) => {
+let db = new sqlite3.Database('./data/database.db', (err) => {
   if (err) {
     console.error('数据库连接失败:', err.message);
   } else {
@@ -1830,7 +1830,7 @@ app.post('/api/backup', (req, res) => {
       }
       
       // 直接复制数据库文件
-      fs.copyFile('./database.db', backupPath, (err) => {
+      fs.copyFile('./data/database.db', backupPath, (err) => {
         if (err) {
           console.error('备份失败:', err);
           
