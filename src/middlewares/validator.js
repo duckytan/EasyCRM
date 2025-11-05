@@ -198,6 +198,14 @@ const CommonSchemas = {
       { type: 'minLength', min: 6, message: '新密码至少6个字符' },
     ],
   },
+
+  // 刷新令牌
+  tokenRefresh: {
+    refreshToken: [
+      { type: 'required', message: 'refreshToken不能为空' },
+      { type: 'minLength', min: 10, message: 'refreshToken格式不正确' },
+    ],
+  },
 };
 
 module.exports = {
